@@ -1,5 +1,22 @@
 var PlayState = (function() {
     "use strict;"
+
+    function Player(options){
+        this.quad = new TQuad('assets/textures/robot/idle/1.png');
+    }
+
+    Player.prototype.addTo = function(container){
+        container.add(this.quad.mesh);
+    }
+
+    Player.prototype.update = function(game, dt) {
+        this.quad.mesh.position.set(
+            game.width / 2 ,
+            game.height / 2 - 100,
+            1
+        );
+    }
+
     function Ship(options) {
         this.quad = new TQuad('placeholderArt/ship.png');
         this.speed = options.speed
@@ -27,15 +44,21 @@ var PlayState = (function() {
         container.add(this.quad.mesh)
     };
 
+    // A textured quad.
     function TQuad(fname) {
         this.material = new THREE.MeshBasicMaterial({
             map: game.loader.get( fname ),
             color: 0xffffff,
+            transparent: true,
             // In order to support flipping need two sides...
             side: THREE.DoubleSide
         });
 
-        this.mesh = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), this.material );
+        this.width = this.material.map.image.width;
+        this.height = this.material.map.image.height;
+
+
+        this.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), this.material );
         this.mesh.scale.set(
             this.material.map.image.width,
             -this.material.map.image.height,
@@ -46,18 +69,41 @@ var PlayState = (function() {
 
     function PlayState() {
         State.call(this);
+        var pixelize = function(t) {
+            t.magFilter = THREE.NearestFilter;
+            t.minFilter = THREE.LinearMipMapLinearFilter;
+        };
+
         this.assets = [
             {
-                name: 'placeholderArt/planet.png',
-                type: 'img'
+                name: 'assets/textures/bg/bg.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars_atmosphere1.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars_atmosphere2.png',
+                type: 'img',
+                callback: pixelize,
             },
             {
                 name: 'placeholderArt/ship.png',
-                type: 'img'
+                type: 'img',
+                callback: pixelize,
             },
             {
-                name:'placeholderArt/robot.png',
-                type: 'img'
+                name:'assets/textures/robot/idle/1.png',
+                type: 'img',
+                callback: pixelize,
             }
         ];
     };
@@ -79,8 +125,10 @@ var PlayState = (function() {
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
 
-        this.bgSprite = new TQuad('placeholderArt/planet.png');
-        this.player = new TQuad('placeholderArt/robot.png');
+        this.bgSprite = new TQuad('assets/textures/bg/mars.png');
+        this.player = new Player();
+
+        this.player.addTo(this.scene2d);
 
 
         this.worldObject = new THREE.Object3D();
@@ -99,23 +147,24 @@ var PlayState = (function() {
         }
 
         this.worldObject.add(this.bgSprite.mesh);
-
         this.scene2d.add(this.worldObject);
-        this.scene2d.add(this.player.mesh);
         this.controllers.push(this.update.bind(this));
     };
 
     PlayState.prototype.update = function(game, dt){
         var rotation = 0;
         if( game.input.keys[68] ) {
-            rotation += dt * Math.PI / 800;
+            rotation -= dt * Math.PI / 800;
         }
         if( game.input.keys[65] ) {
-            rotation -= dt * Math.PI / 800;
+            rotation += dt * Math.PI / 800;
         }
         this.ships.forEach(function(ship) {
             ship.rotate( dt * ship.speed * Math.PI / 1200);
         });
+
+        this.player.update(game, dt);
+
         this.worldObject.rotation.z += rotation;
 
         this.worldObject.position.set( this.cx, 400, 0 );
