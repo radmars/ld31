@@ -1,6 +1,6 @@
 var PlayState = (function() {
 
-    function Circle() {
+    function PlayState() {
         State.call(this);
         this.assets = [
             {
@@ -10,17 +10,17 @@ var PlayState = (function() {
         ];
     };
 
-    Circle.prototype = Object.create(State.prototype);
+    PlayState.prototype = Object.create(State.prototype);
 
-    Circle.prototype.getAssets = function() {
+    PlayState.prototype.getAssets = function() {
         return this.assets;
     };
 
-    Circle.prototype.onStart = function(game) {
+    PlayState.prototype.onStart = function(game) {
         var self = this;
         this.game = game;
         this.scene2d = new THREE.Scene();
-        this.camera2d = new THREE.OrthographicCamera(0, window.innerWidth, 0, window.innerHeight);
+        this.camera2d = new THREE.OrthographicCamera(0, game.width, game.height );
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
         this.camera2d.position.z = 100;
@@ -30,21 +30,20 @@ var PlayState = (function() {
         this.scene2d.add(plane);
     };
 
-    Circle.prototype.resize = function(width, height) {
+    PlayState.prototype.resize = function(width, height) {
         this.camera2d.right = width;
         this.camera2d.bottom = height;
         this.camera2d.updateProjectionMatrix();
     };
 
-    Circle.prototype.onStop = function(game) {
+    PlayState.prototype.onStop = function(game) {
         game.renderer.autoClear = true;
     };
 
-    Circle.prototype.render = function(game) {
-        console.log("Renderin");
+    PlayState.prototype.render = function(game) {
         game.renderer.clear();
         game.renderer.render(this.scene2d, this.camera2d);
     };
 
-    return Circle;
+    return PlayState;
 }).call(this);

@@ -1,3 +1,19 @@
+Object.defineProperty(Array.prototype, "remove", {
+    enumerable: false,
+    value: function (item) {
+        var removeCounter = 0;
+
+        for (var index = 0; index < this.length; index++) {
+            if (this[index] === item) {
+                this.splice(index, 1);
+                removeCounter++;
+                index--;
+            }
+        }
+        return removeCounter;
+    }
+});
+
 var Game = (function(){
     "use strict;"
     function InputManager(element) {
@@ -7,7 +23,6 @@ var Game = (function(){
         this.pressEvent = [];
         this.keyUpEvent = [];
         this.keyDownEvent = [];
-        this.keys = {};
         this.element.tabIndex = 1;
         this.element.focus();
         this.element.addEventListener('mousemove', this.mouseMove.bind(this));
@@ -52,10 +67,12 @@ var Game = (function(){
         this.input = new InputManager(this.renderer.domElement);
         window.onresize = this.resize.bind(this);
         this.loader = new Loader();
-        this.setState(new LoaderState(new PlayState()));
+        this.setState(new LoaderState(new IntroState(new PlayState())));
         this.lastFrame = Date.now();
-        this.resize();
-        requestAnimationFrame(this.callback);
+        requestAnimationFrame(function(){
+            self.resize();
+            self.callback();
+        });
     }
 
     Game.prototype.setState = function(state) {
@@ -67,12 +84,11 @@ var Game = (function(){
     };
 
     Game.prototype.resize = function(event) {
-        var height, width;
         var r = this.mainElement.getBoundingClientRect();
-        width = r.width;
-        height = r.height;
-        this.state.resize(width, height);
-        return this.renderer.setSize(width, height);
+        this.width = r.width;
+        this.height = r.height;
+        this.state.resize(this.width, this.height);
+        return this.renderer.setSize(this.width, this.height);
     };
 
     Game.prototype.update = function() {
@@ -82,7 +98,8 @@ var Game = (function(){
         }
         delta = Date.now() - this.lastFrame;
         this.lastFrame = Date.now();
-        this.state.renderFrame(this, delta);
+        this.state.update(this, delta);
+        this.state.render(this);
         requestAnimationFrame(this.callback);
     };
     return Game;

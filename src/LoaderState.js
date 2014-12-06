@@ -38,7 +38,7 @@ var LoaderState = (function() {
         return game.renderer.autoClear = true;
     };
 
-    LoaderState.prototype.renderFrame = function(game, delta) {
+    LoaderState.prototype.update = function(game, delta) {
         var self = this;
         if (game.loader.done(this.getAssets())) {
             game.operations.push(function() {

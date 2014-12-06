@@ -7,7 +7,7 @@ var State = (function() {
         this.controllers = [];
     }
 
-    State.prototype.renderFrame = function(game, delta) {
+    State.prototype.update = function(game, delta) {
         this.controllers.forEach(function(c) {
             c.update(delta);
         });
