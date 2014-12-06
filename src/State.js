@@ -2,14 +2,13 @@ var State = (function() {
     "use strict;"
     function State() {
 
-        // controllers are things that have an update function that takes a
-        // delta time.
+        // controllers are function that takes a delta time and the game.
         this.controllers = [];
     }
 
     State.prototype.update = function(game, delta) {
         this.controllers.forEach(function(c) {
-            c.update(delta);
+            c(game, delta);
         });
     };
 

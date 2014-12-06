@@ -1,5 +1,5 @@
 var PlayState = (function() {
-
+    "use strict;"
     function PlayState() {
         State.call(this);
         this.assets = [
@@ -16,27 +16,57 @@ var PlayState = (function() {
         return this.assets;
     };
 
+
     PlayState.prototype.onStart = function(game) {
         var self = this;
-        this.game = game;
+
         this.scene2d = new THREE.Scene();
-        this.camera2d = new THREE.OrthographicCamera(0, game.width, game.height );
+        this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
+        this.camera2d.position.z = 10;
+
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
-        this.camera2d.position.z = 100;
 
-        plane = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshNormalMaterial());
-        //plane.rotateOnAxis(new THREE.Vector3(-1, 0, 0), 90);
-        this.scene2d.add(plane);
+        var bgMaterial = new THREE.MeshBasicMaterial({
+            map: game.loader.get( "assets/intro/intro_bg.png" ),
+            color: 0xffffff
+        });
+
+
+        this.bgSprite = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), bgMaterial );
+        this.bgSprite.scale.set( 800, -600, 1 );
+
+        this.worldObject = new THREE.Object3D();
+        this.worldObject.add(this.bgSprite);
+
+        this.scene2d.add(this.worldObject);
+        this.controllers.push(this.update.bind(this));
     };
 
+    PlayState.prototype.update = function(game, dt){
+        var rotation = 0;
+        if( game.input.keys[68] ) {
+            rotation += dt * Math.PI / 800;
+        }
+        if( game.input.keys[65] ) {
+            rotation -= dt * Math.PI / 800;
+        }
+        this.bgSprite.rotation.z += rotation;
+
+        this.bgSprite.position.set( this.cx, 400, 0 );
+    }
+
+
     PlayState.prototype.resize = function(width, height) {
+        this.cx = width / 2;
+        this.cy = height / 2;
         this.camera2d.right = width;
         this.camera2d.bottom = height;
         this.camera2d.updateProjectionMatrix();
     };
 
     PlayState.prototype.onStop = function(game) {
+        game.input.keyUpEvent.remove(this.keyHandler);
         game.renderer.autoClear = true;
     };
 

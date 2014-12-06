@@ -65,14 +65,12 @@ var IntroState = (function(){
         this.textMaterials = this.textFiles.map(function( file ) {
             return new THREE.SpriteMaterial({
                 map: game.loader.get( file.name ),
-                useScreenCoordinates: true,
             });
         });
 
         this.glassesMaterials = this.glassesFiles.map(function( file ) {
             return new THREE.SpriteMaterial({
                 map: game.loader.get( file.name ),
-                useScreenCoordinates: true,
             });
         });
 
@@ -88,7 +86,6 @@ var IntroState = (function(){
 
         var bgMaterial = new THREE.SpriteMaterial({
             map: game.loader.get( this.bgAssetName ),
-            useScreenCoordinates: true,
         });
 
         this.bgSprite = new THREE.Sprite( bgMaterial );
@@ -96,56 +93,54 @@ var IntroState = (function(){
         this.scene2d.add(this.bgSprite);
         this.scene2d.add(this.textSprite);
         this.scene2d.add(this.glassesSprite);
-        this.controllers.push({
-            update: function( dt ) {
-                self.counter += dt;
+        this.controllers.push(function( game, dt ) {
+            self.counter += dt;
 
-                if( self.counter < 2000)
-                    self.textSprite.material = self.textMaterials[ 0 ];
-                else if( self.counter < 2050) {
-                    self.textSprite.scale.set( 192, -28, 1 );
-                    self.textSprite.material = self.textMaterials[ 1 ];
-                }
-                else if( self.counter < 2600)
-                    self.textSprite.material = self.textMaterials[ 2 ];
-                else if( self.counter < 2650)
-                    self.textSprite.material = self.textMaterials[ 1 ];
-                else if( self.counter < 2700)
-                    self.textSprite.material = self.textMaterials[ 2 ];
-                else if( self.counter < 2750)
-                    self.textSprite.material = self.textMaterials[ 1 ];
-                else if( self.counter < 2800)
-                    self.textSprite.material = self.textMaterials[ 2 ];
-                else if( self.counter < 2850)
-                    self.textSprite.material = self.textMaterials[ 1 ];
-                else
-                    self.textSprite.material = self.textMaterials[ 2 ];
+            if( self.counter < 2000)
+                self.textSprite.material = self.textMaterials[ 0 ];
+            else if( self.counter < 2050) {
+                self.textSprite.scale.set( 192, -28, 1 );
+                self.textSprite.material = self.textMaterials[ 1 ];
+            }
+            else if( self.counter < 2600)
+                self.textSprite.material = self.textMaterials[ 2 ];
+            else if( self.counter < 2650)
+                self.textSprite.material = self.textMaterials[ 1 ];
+            else if( self.counter < 2700)
+                self.textSprite.material = self.textMaterials[ 2 ];
+            else if( self.counter < 2750)
+                self.textSprite.material = self.textMaterials[ 1 ];
+            else if( self.counter < 2800)
+                self.textSprite.material = self.textMaterials[ 2 ];
+            else if( self.counter < 2850)
+                self.textSprite.material = self.textMaterials[ 1 ];
+            else
+                self.textSprite.material = self.textMaterials[ 2 ];
 
-                if( self.counter < 2000)
-                    self.glassesSprite.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
-                else if( self.counter < 2150 )
-                    self.glassesSprite.material = self.glassesMaterials[ 1 ];
-                else if( self.counter < 2300 )
-                    self.glassesSprite.material = self.glassesMaterials[ 2 ];
-                else if( self.counter < 2550 )
-                    self.glassesSprite.material = self.glassesMaterials[ 3 ];
-                else
-                    self.glassesSprite.material = self.glassesMaterials[ 0 ];
+            if( self.counter < 2000)
+                self.glassesSprite.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
+            else if( self.counter < 2150 )
+                self.glassesSprite.material = self.glassesMaterials[ 1 ];
+            else if( self.counter < 2300 )
+                self.glassesSprite.material = self.glassesMaterials[ 2 ];
+            else if( self.counter < 2550 )
+                self.glassesSprite.material = self.glassesMaterials[ 3 ];
+            else
+                self.glassesSprite.material = self.glassesMaterials[ 0 ];
 
 
-                self.bgSprite.position.set( self.cx, 400, 0 );
-                self.glassesSprite.position.x = self.cx;
+            self.bgSprite.position.set( self.cx, 400, 0 );
+            self.glassesSprite.position.x = self.cx;
 
-                self.textSprite.position.set(
-                    self.cx,
-                    self.cy - 28 / 2 + 80, 0
-                );
+            self.textSprite.position.set(
+                self.cx,
+                self.cy - 28 / 2 + 80, 0
+            );
 
-                if(self.counter > 5000){
-                    game.operations.push(function() {
-                        game.setState( self.nextState );
-                    });
-                }
+            if(self.counter > 5000){
+                game.operations.push(function() {
+                    game.setState( self.nextState );
+                });
             }
         });
     };

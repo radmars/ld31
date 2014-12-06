@@ -17,19 +17,33 @@ Object.defineProperty(Array.prototype, "remove", {
 var Game = (function(){
     "use strict;"
     function InputManager(element) {
+        var self = this;
         this.element = element;
         this.motionEvent = [];
         this.clickEvent = [];
+        // typing
         this.pressEvent = [];
+        // releasinG
         this.keyUpEvent = [];
+        //holding
         this.keyDownEvent = [];
         this.element.tabIndex = 1;
         this.element.focus();
         this.element.addEventListener('mousemove', this.mouseMove.bind(this));
-        this.element.addEventListener('keypress', this.press.bind(this));
-        this.element.addEventListener('keydown', this.keyDown.bind(this));
-        this.element.addEventListener('keyup', this.keyUp.bind(this));
+        //this.element.addEventListener('keypress', this.press.bind(this));
+        this.element.addEventListener('keydown', this.keyDown.bind(this), true);
+        this.element.addEventListener('keyup', this.keyUp.bind(this), true);
         this.element.addEventListener('click', this.click.bind(this));
+
+        // non evented key queries
+        this.keys = {};
+
+        this.keyDownEvent.push(function(e) {
+            self.keys[e.keyCode] = true;
+        });
+        this.keyUpEvent.push(function(e) {
+            delete self.keys[e.keyCode];
+        });
     }
 
     function generateHandler( field ) {
@@ -38,15 +52,15 @@ var Game = (function(){
             handlers.forEach(function(handler) {
                 handler(e);
             });
-            return false;
+            return true;
         };
     }
 
     InputManager.prototype.click = generateHandler( 'clickEvent' );
     InputManager.prototype.press = generateHandler( 'pressEvent' );
     InputManager.prototype.mouseMove = generateHandler( 'motionEvent' );
-    InputManager.prototype.keyDown = generateHandler( 'keyUpEvent' );
-    InputManager.prototype.keyUp = generateHandler( 'keyDownEvent' );
+    InputManager.prototype.keyDown = generateHandler( 'keyDownEvent' );
+    InputManager.prototype.keyUp = generateHandler( 'keyUpEvent' );
 
     function Game(element) {
         var self = this;

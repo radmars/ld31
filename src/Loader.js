@@ -52,7 +52,6 @@ var Loader = (function() {
     Loader.prototype.load = function(assets) {
         var self = this;
         assets.forEach(function(asset) {
-            console.log("Loading: ", asset.name);
             var loader = self.loaders[asset.type];
             if(! loader) {
                 console.log("No loader for: ", asset);
