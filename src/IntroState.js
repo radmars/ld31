@@ -46,14 +46,11 @@ var IntroState = (function(){
     IntroState.prototype.onStart = function(game) {
         var self = this;
         this.scene2d = new THREE.Scene();
-        this.camera2d = new THREE.OrthographicCamera(0, game.width, 0, game.height );
+        this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
         this.camera2d.position.z = 10;
 
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
-
-        this.cx = this.camera2d.right / 2;
-        this.cy = this.camera2d.bottom / 2;
 
         this.keyHandler = function( e ) {
             if( e.keyCode == 13 ) {
@@ -82,12 +79,12 @@ var IntroState = (function(){
         this.textSprite = new THREE.Sprite( this.textMaterials[ 0 ] );
         this.textSprite.scale.set(
             this.textMaterials[0].map.image.width,
-            this.textMaterials[0].map.image.height,
+            -this.textMaterials[0].map.image.height,
             1
         );
 
         this.glassesSprite = new THREE.Sprite( this.glassesMaterials[ 0 ] );
-        this.glassesSprite.scale.set( 144, 24, 1 );
+        this.glassesSprite.scale.set( 144, -24, 1 );
 
         var bgMaterial = new THREE.SpriteMaterial({
             map: game.loader.get( this.bgAssetName ),
@@ -95,7 +92,7 @@ var IntroState = (function(){
         });
 
         this.bgSprite = new THREE.Sprite( bgMaterial );
-        this.bgSprite.scale.set( 800, 600, 1 );
+        this.bgSprite.scale.set( 800, -600, 1 );
         this.scene2d.add(this.bgSprite);
         this.scene2d.add(this.textSprite);
         this.scene2d.add(this.glassesSprite);
@@ -106,7 +103,7 @@ var IntroState = (function(){
                 if( self.counter < 2000)
                     self.textSprite.material = self.textMaterials[ 0 ];
                 else if( self.counter < 2050) {
-                    self.textSprite.scale.set( 192, 28, 1 );
+                    self.textSprite.scale.set( 192, -28, 1 );
                     self.textSprite.material = self.textMaterials[ 1 ];
                 }
                 else if( self.counter < 2600)
@@ -125,7 +122,7 @@ var IntroState = (function(){
                     self.textSprite.material = self.textMaterials[ 2 ];
 
                 if( self.counter < 2000)
-                    self.glassesSprite.position.y = ( self.cy - self.glassesSprite.scale.y / 2 ) * (self.counter/2000.0);
+                    self.glassesSprite.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
                 else if( self.counter < 2150 )
                     self.glassesSprite.material = self.glassesMaterials[ 1 ];
                 else if( self.counter < 2300 )
@@ -135,12 +132,12 @@ var IntroState = (function(){
                 else
                     self.glassesSprite.material = self.glassesMaterials[ 0 ];
 
-                self.bgSprite.position.set( self.cx - 800/2, self.cy - 600/2, 0 );
-                self.textSprite.position.set( self.cx - 108/2 , 377, 0 );
-                self.glassesSprite.position.x = self.cx - 144/2;
+
+                self.bgSprite.position.set( self.cx, 400, 0 );
+                self.glassesSprite.position.x = self.cx;
 
                 self.textSprite.position.set(
-                    self.cx - self.textSprite.scale.x/2 ,
+                    self.cx,
                     self.cy - 28 / 2 + 80, 0
                 );
 

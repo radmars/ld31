@@ -80,7 +80,8 @@ var Game = (function(){
             this.state.onStop(this);
         }
         this.state = state;
-        return this.state.onStart(this);
+        this.state.onStart(this);
+        this.state.resize(this.width, this.height);
     };
 
     Game.prototype.resize = function(event) {
@@ -88,7 +89,7 @@ var Game = (function(){
         this.width = r.width;
         this.height = r.height;
         this.state.resize(this.width, this.height);
-        return this.renderer.setSize(this.width, this.height);
+        this.renderer.setSize(this.width, this.height);
     };
 
     Game.prototype.update = function() {
