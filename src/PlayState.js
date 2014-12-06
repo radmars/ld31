@@ -11,9 +11,9 @@ var PlayState = (function() {
 
     Player.prototype.update = function(game, dt) {
         this.quad.mesh.position.set(
-            game.width / 2 ,
-            game.height / 2 - 100,
-            1
+            game.width / 2,
+            game.height / 2 - 165,
+            0
         );
     }
 
@@ -60,8 +60,8 @@ var PlayState = (function() {
 
         this.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), this.material );
         this.mesh.scale.set(
-            this.material.map.image.width,
-            -this.material.map.image.height,
+            this.material.map.image.width * 2,
+            -this.material.map.image.height * 2,
             1
         );
     }
@@ -125,12 +125,16 @@ var PlayState = (function() {
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
 
-        this.bgSprite = new TQuad('assets/textures/bg/mars.png');
+        this.bgSprite = new TQuad('assets/textures/bg/bg.png');
+        this.bgSprite.mesh.position.z = -1;
+        this.planet = new TQuad('assets/textures/bg/mars.png');
         this.player = new Player();
+        this.atmosphere1 = new TQuad('assets/textures/bg/mars_atmosphere1.png');
+        this.atmosphere1.mesh.position.z = 2;
+        this.atmosphere2 = new TQuad('assets/textures/bg/mars_atmosphere2.png');
+        this.atmosphere2.mesh.position.z = 2;
 
         this.player.addTo(this.scene2d);
-
-
         this.worldObject = new THREE.Object3D();
 
         this.ships = [];
@@ -147,6 +151,9 @@ var PlayState = (function() {
         }
 
         this.worldObject.add(this.bgSprite.mesh);
+        this.worldObject.add(this.atmosphere1.mesh);
+        this.worldObject.add(this.planet.mesh);
+        this.worldObject.add(this.atmosphere2.mesh);
         this.scene2d.add(this.worldObject);
         this.controllers.push(this.update.bind(this));
     };
@@ -154,13 +161,13 @@ var PlayState = (function() {
     PlayState.prototype.update = function(game, dt){
         var rotation = 0;
         if( game.input.keys[68] ) {
-            rotation -= dt * Math.PI / 800;
+            rotation -= dt * Math.PI / 1600;
         }
         if( game.input.keys[65] ) {
-            rotation += dt * Math.PI / 800;
+            rotation += dt * Math.PI / 1600;
         }
         this.ships.forEach(function(ship) {
-            ship.rotate( dt * ship.speed * Math.PI / 1200);
+            ship.rotate( dt * ship.speed * Math.PI / 1800);
         });
 
         this.player.update(game, dt);
