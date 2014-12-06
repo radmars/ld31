@@ -2,7 +2,10 @@ var PlayState = (function() {
     "use strict;"
     function Ship(options) {
         this.quad = new TQuad('placeholderArt/ship.png');
-
+        this.speed = options.speed
+        if(options.speed < 0) {
+            this.quad.mesh.scale.x *= -1;
+        }
         this.orbitDistance = options.distance || 50;
         this.rotation = 0;
         this.rotate(options.rotation || 0);
@@ -27,7 +30,9 @@ var PlayState = (function() {
     function TQuad(fname) {
         this.material = new THREE.MeshBasicMaterial({
             map: game.loader.get( fname ),
-            color: 0xffffff
+            color: 0xffffff,
+            // In order to support flipping need two sides...
+            side: THREE.DoubleSide
         });
 
         this.mesh = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), this.material );
@@ -86,7 +91,8 @@ var PlayState = (function() {
         for(var i = 0; i < 4; i++) {
             var ship = new Ship({
                 distance: i*50 + 200,
-                rotation: Math.random() * Math.PI * 2
+                rotation: Math.random() * Math.PI * 2,
+                speed: Math.random() - 0.5
             });
             ship.addTo(this.worldObject);
             this.ships.push(ship);
@@ -108,7 +114,7 @@ var PlayState = (function() {
             rotation -= dt * Math.PI / 800;
         }
         this.ships.forEach(function(ship) {
-            ship.rotate( dt * Math.PI / 1200);
+            ship.rotate( dt * ship.speed * Math.PI / 1200);
         });
         this.worldObject.rotation.z += rotation;
 
