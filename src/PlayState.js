@@ -1,11 +1,58 @@
 var PlayState = (function() {
     "use strict;"
+    function Ship(options) {
+        this.quad = new TQuad('placeholderArt/ship.png');
+
+        this.orbitDistance = options.distance || 50;
+        this.rotation = 0;
+        this.rotate(options.rotation || 0);
+    }
+
+    Ship.prototype.rotate = function( rads ) {
+        this.rotation += rads;
+        // REMEMBER YOUR TRIG LADS?
+        this.quad.mesh.rotation.z = Math.PI/2 + this.rotation;
+        this.quad.mesh.position.set(
+            Math.cos(this.rotation),
+            Math.sin(this.rotation),
+            0
+        );
+        this.quad.mesh.position.multiplyScalar( this.orbitDistance );
+    }
+
+    Ship.prototype.addTo = function( container ) {
+        container.add(this.quad.mesh)
+    };
+
+    function TQuad(fname) {
+        this.material = new THREE.MeshBasicMaterial({
+            map: game.loader.get( fname ),
+            color: 0xffffff
+        });
+
+        this.mesh = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), this.material );
+        this.mesh.scale.set(
+            this.material.map.image.width,
+            -this.material.map.image.height,
+            1
+        );
+    }
+
+
     function PlayState() {
         State.call(this);
         this.assets = [
             {
-                name: 'assets/models/bomb.js',
-                type: 'model'
+                name: 'placeholderArt/planet.png',
+                type: 'img'
+            },
+            {
+                name: 'placeholderArt/ship.png',
+                type: 'img'
+            },
+            {
+                name:'placeholderArt/robot.png',
+                type: 'img'
             }
         ];
     };
@@ -27,19 +74,28 @@ var PlayState = (function() {
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
 
-        var bgMaterial = new THREE.MeshBasicMaterial({
-            map: game.loader.get( "assets/intro/intro_bg.png" ),
-            color: 0xffffff
-        });
+        this.bgSprite = new TQuad('placeholderArt/planet.png');
+        this.player = new TQuad('placeholderArt/robot.png');
 
-
-        this.bgSprite = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), bgMaterial );
-        this.bgSprite.scale.set( 800, -600, 1 );
 
         this.worldObject = new THREE.Object3D();
-        this.worldObject.add(this.bgSprite);
+
+        this.ships = [];
+
+        // random angle
+        for(var i = 0; i < 4; i++) {
+            var ship = new Ship({
+                distance: i*50 + 200,
+                rotation: Math.random() * Math.PI * 2
+            });
+            ship.addTo(this.worldObject);
+            this.ships.push(ship);
+        }
+
+        this.worldObject.add(this.bgSprite.mesh);
 
         this.scene2d.add(this.worldObject);
+        this.scene2d.add(this.player.mesh);
         this.controllers.push(this.update.bind(this));
     };
 
@@ -51,9 +107,12 @@ var PlayState = (function() {
         if( game.input.keys[65] ) {
             rotation -= dt * Math.PI / 800;
         }
-        this.bgSprite.rotation.z += rotation;
+        this.ships.forEach(function(ship) {
+            ship.rotate( dt * Math.PI / 1200);
+        });
+        this.worldObject.rotation.z += rotation;
 
-        this.bgSprite.position.set( this.cx, 400, 0 );
+        this.worldObject.position.set( this.cx, 400, 0 );
     }
 
 
