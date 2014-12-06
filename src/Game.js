@@ -40,6 +40,7 @@ var Game = (function(){
         });
         this.callback = this.update.bind(this);
         this.settings = {};
+        this.mainElement = element;
 
         // Extract settings with some probably broken regex.
         window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(match, key, value) {
@@ -47,7 +48,7 @@ var Game = (function(){
         });
 
         this.operations = [];
-        document.body.insertBefore(this.renderer.domElement, element);
+        this.mainElement.appendChild(this.renderer.domElement);
         this.input = new InputManager(this.renderer.domElement);
         window.onresize = this.resize.bind(this);
         this.loader = new Loader();
@@ -67,8 +68,9 @@ var Game = (function(){
 
     Game.prototype.resize = function(event) {
         var height, width;
-        width = window.innerWidth;
-        height = window.innerHeight;
+        var r = this.mainElement.getBoundingClientRect();
+        width = r.width;
+        height = r.height;
         this.state.resize(width, height);
         return this.renderer.setSize(width, height);
     };

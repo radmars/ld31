@@ -1,6 +1,9 @@
 var State = (function() {
     "use strict;"
     function State() {
+
+        // controllers are things that have an update function that takes a
+        // delta time.
         this.controllers = [];
     }
 
