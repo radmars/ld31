@@ -10,6 +10,12 @@ var Player = (function() {
                     name: 'idle',
                 },
                 {
+                    frames: TQuad.enumerate( 3, 'blackhole/close' ),
+                    frameTime: 100,
+                    name: 'close',
+                },
+
+                {
                     frames: TQuad.enumerate( 3, 'blackhole/open' ),
                     frameTime: 100,
                     name: 'open',
@@ -19,30 +25,32 @@ var Player = (function() {
         });
 
         this.counter = 0;
-        this.quad.mesh.position.z = 0;
         this.planet = planet;
         // Pin our rotation.
-        this.rotation = planet.rotation;
+        this.rotation = planet.rotation + Math.PI / 2;
         this.planet.add(this.quad.mesh);
-        this.calculatePosition();
+        this.direction = new THREE.Vector2( Math.cos(this.rotation), Math.sin(this.rotation) );
+        this.direction.y *= -1;
+        var pos = this.direction.clone();
+        this.direction.multiplyScalar( 100 );
+        pos.multiplyScalar( 180 );
+        this.quad.mesh.position.x = pos.x;
+        this.quad.mesh.position.y = pos.y;
+        this.quad.mesh.position.z = 0;
+        this.quad.mesh.rotation.z = - this.rotation;
+        this.calculatePosition(0);
     }
 
-    // more trig,  or something.
-    Blackhole.prototype.calculatePosition = function() {
-        var converted = new THREE.Vector3(0, -140 - (this.counter / 1000) * 150);
-        var m = new THREE.Matrix4().makeRotationZ(-this.rotation);
-        converted.applyMatrix4(m);
-
-        this.quad.mesh.rotation.z = - this.rotation;
-        this.quad.mesh.position.y = converted.y;
-        this.quad.mesh.position.x = converted.x;
+    Blackhole.prototype.calculatePosition = function(dt ) {
+        this.quad.mesh.position.x += this.direction.x * dt / 1000
+        this.quad.mesh.position.y += this.direction.y * dt / 1000
     }
 
     Blackhole.prototype.update = function(game, dt) {
         this.quad.update(dt);
         this.counter += dt;
         if( this.counter < 1000 ) {
-            this.calculatePosition();
+            this.calculatePosition(dt);
         }
         else if( this.counter < 3000 ) {
             if( !this.opened ) {
@@ -51,9 +59,16 @@ var Player = (function() {
                 this.opened = true;
             }
         }
+        else if( this.counter < 4000 ) {
+            if( ! this.closing) {
+                this.closing = true;
+                this.quad.currentAnimation = 'close';
+                this.quad.setFrame(0);
+            }
+        }
         else {
+                this.closed = true;
             this.planet.remove(this.quad.mesh);
-            this.closed = true;
         }
     }
 
@@ -67,6 +82,13 @@ var Player = (function() {
                 },
             ],
         });
+
+        this.quad.mesh.position.set(
+            game.width / 2,
+            game.height / 2 - 128,
+            -1
+        );
+
     }
 
     Player.prototype.addTo = function(container){
@@ -75,13 +97,6 @@ var Player = (function() {
     }
 
     Player.prototype.update = function(game, dt) {
-        var self = this;
-        this.quad.mesh.position.set(
-            game.width / 2,
-            game.height / 2 - 128,
-            -1
-        );
-
         if(this.blackhole) {
             this.blackhole.update(game, dt);
 
