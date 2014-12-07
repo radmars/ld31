@@ -6,6 +6,53 @@ var PlayState = (function() {
         t.minFilter = THREE.LinearMipMapLinearFilter;
     };
 
+    function Missile(game, ship, planet, rotation, position, offset) {
+        this.quad = new TQuad(game, {
+            frames: [ 'assets/textures/missile/missile.png' ],
+        });
+
+        this.rotation = rotation.z;
+        offset = rotate( new THREE.Vector3( offset.x, offset.y ), this.rotation );
+
+        this.counter = 0;
+        this.startPosition = { x: position.x, y: position.y };
+        this.quad.mesh.rotation.z = rotation.z
+        this.quad.mesh.position.x = position.x + offset.x;
+        this.quad.mesh.position.y = position.y + offset.y;
+        this.quad.mesh.position.z = 4;
+        this.ship = ship;
+        this.planet = planet;
+        this.planet.add(this.quad.mesh);
+        this.calculatePosition();
+    }
+
+    function rotate( v, r ) {
+        var m = new THREE.Matrix4().makeRotationZ(r);
+        var v = v.clone();
+        v.applyMatrix4(m);
+        return v;
+    }
+
+    // more trig,  or something.
+    Missile.prototype.calculatePosition = function() {
+        var n = this.quad.mesh.position.clone();
+        n.z = 0;
+        this.quad.mesh.position.y = this.startPosition.y * (1 - this.counter / 3000);
+        this.quad.mesh.position.x = this.startPosition.x * (1 - this.counter / 3000);
+    }
+
+    Missile.prototype.update = function(game, dt) {
+        this.counter += dt;
+        if( this.counter < 3000 ) {
+            this.calculatePosition();
+        }
+        else {
+            this.planet.remove(this.quad.mesh);
+            this.ship.missile = null;
+        }
+    };
+
+
     function Mars(game) {
         this.bgSprite    = new TQuad(game, { frames: ['assets/textures/bg/bg.png']});
         this.planet      = new TQuad(game, { frames: ['assets/textures/bg/mars.png']});
@@ -50,9 +97,28 @@ var PlayState = (function() {
     }
 
     function Ship(game, options) {
-        this.quad = new TQuad(game, {frames: ['placeholderArt/ship.png']});
+        this.enemyId = Math.floor(Math.random() * 3 + 1);
+
+        this.mouthSpot = {
+            1: {
+                x: 40,
+                y: 0
+            },
+            2: {
+                x: 0,
+                y: 0
+            },
+            3: {
+                x: 0,
+                y: 0
+            }
+        }[this.enemyId];
+
+        this.quad = new TQuad(game, {
+            frames: TQuad.enumerate( 2, 'enemies/' + this.enemyId),
+        });
         this.speed = options.speed
-        if(options.speed < 0) {
+        if(options.speed > 0) {
             this.quad.mesh.scale.x *= -1;
         }
         this.orbitDistance = options.distance || 50;
@@ -72,6 +138,24 @@ var PlayState = (function() {
         this.quad.mesh.position.multiplyScalar( this.orbitDistance );
     }
 
+    Ship.prototype.update = function( dt, planet ) {
+        this.rotate( dt * this.speed * Math.PI / 1800);
+        if(this.missile) {
+            this.missile.update( game, dt );
+        }
+        if(!this.missile && !this.firing && Math.random() > .99) {
+            var self = this;
+            self.missile = new Missile( game, this, planet, this.quad.mesh.rotation, this.quad.mesh.position, this.mouthSpot);
+            self.quad.setFrame(1);
+            window.setTimeout(function() {
+                self.firing = false;
+                self.quad.setFrame(0);
+            }, 1000);
+            this.firing = true;
+
+        }
+    }
+
     Ship.prototype.addTo = function( container ) {
         container.add(this.quad.mesh)
     };
@@ -79,7 +163,6 @@ var PlayState = (function() {
 
     function PlayState() {
         State.call(this);
-        
         this.assets = [
             {
                 name: 'assets/textures/bg/bg.png',
@@ -102,7 +185,7 @@ var PlayState = (function() {
                 callback: pixelize,
             },
             {
-                name: 'placeholderArt/ship.png',
+                name: 'assets/textures/missile/missile.png',
                 type: 'img',
                 callback: pixelize,
             }
@@ -110,6 +193,9 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(1, 'robot/idle'))
          .concat(mapAnimationAssets(1, 'tinyman/die'))
          .concat(mapAnimationAssets(1, 'tinyman/idle'))
+         .concat(mapAnimationAssets(2, 'enemies/1'))
+         .concat(mapAnimationAssets(2, 'enemies/2'))
+         .concat(mapAnimationAssets(2, 'enemies/3'))
          .concat(mapAnimationAssets(1, 'tinyman/run'))
          .concat(mapAnimationAssets(3, 'blackhole/open'))
          .concat(mapAnimationAssets(3, 'blackhole/close'))
@@ -133,7 +219,6 @@ var PlayState = (function() {
     PlayState.prototype.getAssets = function() {
         return this.assets;
     };
-
 
     PlayState.prototype.onStart = function(game) {
         var self = this;
@@ -168,6 +253,7 @@ var PlayState = (function() {
     };
 
     PlayState.prototype.update = function(game, dt){
+        var self = this;
         var rotation = 0;
         if( game.input.keys[87] ) {
             this.player.fire(game, this.mars);
@@ -185,7 +271,7 @@ var PlayState = (function() {
         this.mars.rotate(rotation);
 
         this.ships.forEach(function(ship) {
-            ship.rotate( dt * ship.speed * Math.PI / 1800);
+            ship.update(dt, self.mars);
         });
 
         this.player.update(game, dt);

@@ -49,5 +49,10 @@ var TQuad = (function() {
         }
     }
 
+    TQuad.prototype.setFrame = function( f ) {
+        this.currentFrame = f;
+        this.mesh.material = this.materials[this.currentFrame];
+    }
+
     return TQuad;
 }());
