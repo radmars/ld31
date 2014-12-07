@@ -229,7 +229,7 @@ var PlayState = (function() {
             this.blackhole = this.player.fire(game, this.mars);
         }
 
-        if(!this.player.firing) {
+        //if(!this.player.firing) {
             if( game.input.keys[68] ) {
                 rotation -= dt * Math.PI / 1600;
                 this.player.direction(false);
@@ -238,7 +238,7 @@ var PlayState = (function() {
                 rotation += dt * Math.PI / 1600;
                 this.player.direction(true);
             }
-        }
+        //}
 
         this.mars.rotate(rotation);
         var self = this;

@@ -14,7 +14,6 @@ var Player = (function() {
                     frameTime: 100,
                     name: 'close',
                 },
-
                 {
                     frames: TQuad.enumerate( 3, 'blackhole/open' ),
                     frameTime: 100,
@@ -83,7 +82,7 @@ var Player = (function() {
                 {
                     name: 'shoot',
                     frames: TQuad.enumerate(20, "robot/shoot"),
-                    frameTime: 100
+                    frameTime: 33
                 },
 
             ],
