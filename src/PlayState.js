@@ -58,10 +58,11 @@ var PlayState = (function() {
         this.height = this.material.map.image.height;
 
 
+        var scale = 2;
         this.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), this.material );
         this.mesh.scale.set(
-            this.material.map.image.width * 2,
-            -this.material.map.image.height * 2,
+            this.material.map.image.width * scale,
+            -this.material.map.image.height * scale,
             1
         );
     }
@@ -117,6 +118,7 @@ var PlayState = (function() {
 
     PlayState.prototype.onStart = function(game) {
         var self = this;
+        hack = game;
 
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
@@ -142,7 +144,7 @@ var PlayState = (function() {
         // random angle
         for(var i = 0; i < 4; i++) {
             var ship = new Ship({
-                distance: i*50 + 200,
+                distance: i*20 + 300,
                 rotation: Math.random() * Math.PI * 2,
                 speed: Math.random() - 0.5
             });
