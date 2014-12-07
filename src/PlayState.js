@@ -1,24 +1,50 @@
 var PlayState = (function() {
     "use strict;"
 
-    function Player(options){
-        this.quad = new TQuad('assets/textures/robot/idle/1.png');
+    function Mars(game) {
+        this.bgSprite    = new TQuad(game, 'assets/textures/bg/bg.png');
+        this.planet      = new TQuad(game, 'assets/textures/bg/mars.png');
+        this.atmosphere1 = new TQuad(game, 'assets/textures/bg/mars_atmosphere1.png');
+        this.atmosphere2 = new TQuad(game, 'assets/textures/bg/mars_atmosphere2.png');
+        this.bgSprite.mesh.position.z    = -1;
+        this.atmosphere1.mesh.position.z = 2;
+        this.atmosphere2.mesh.position.z = 2;
+
+        this.worldObject = new THREE.Object3D();
+        this.add(this.bgSprite.mesh);
+        this.add(this.atmosphere1.mesh);
+        this.add(this.planet.mesh);
+        this.add(this.atmosphere2.mesh);
+        this.worldObject.position.set( game.width / 2, game.height / 2, 0 );
+        this.rotation = 0;
     }
 
-    Player.prototype.addTo = function(container){
-        container.add(this.quad.mesh);
+    Mars.prototype.rotate = function(rotate) {
+        this.rotation += rotate;
+        if(this.rotation < - Math.PI) {
+            this.rotation += Math.PI * 2
+        }
+        if(this.rotation > Math.PI ) {
+            this.rotation -= Math.PI * 2;
+        }
+        this.worldObject.rotation.z = this.rotation;
     }
 
-    Player.prototype.update = function(game, dt) {
-        this.quad.mesh.position.set(
-            game.width / 2,
-            game.height / 2 - 165,
-            0
-        );
+    Mars.prototype.addTo = function(container) {
+        this.container = container;
+        container.add(this.worldObject);
     }
 
-    function Ship(options) {
-        this.quad = new TQuad('placeholderArt/ship.png');
+    Mars.prototype.add = function(obj) {
+        this.worldObject.add(obj);
+    }
+
+    Mars.prototype.remove = function(obj) {
+        this.worldObject.remove(obj);
+    }
+
+    function Ship(game, options) {
+        this.quad = new TQuad(game, 'placeholderArt/ship.png');
         this.speed = options.speed
         if(options.speed < 0) {
             this.quad.mesh.scale.x *= -1;
@@ -43,29 +69,6 @@ var PlayState = (function() {
     Ship.prototype.addTo = function( container ) {
         container.add(this.quad.mesh)
     };
-
-    // A textured quad.
-    function TQuad(fname) {
-        this.material = new THREE.MeshBasicMaterial({
-            map: game.loader.get( fname ),
-            color: 0xffffff,
-            transparent: true,
-            // In order to support flipping need two sides...
-            side: THREE.DoubleSide
-        });
-
-        this.width = this.material.map.image.width;
-        this.height = this.material.map.image.height;
-
-
-        var scale = 2;
-        this.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), this.material );
-        this.mesh.scale.set(
-            this.material.map.image.width * scale,
-            -this.material.map.image.height * scale,
-            1
-        );
-    }
 
 
     function PlayState() {
@@ -105,6 +108,11 @@ var PlayState = (function() {
                 name:'assets/textures/robot/idle/1.png',
                 type: 'img',
                 callback: pixelize,
+            },
+            {
+                name: 'assets/textures/tinyman/die/1.png',
+                type: 'img',
+                callback: pixelize,
             }
         ];
     };
@@ -127,56 +135,50 @@ var PlayState = (function() {
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
 
-        this.bgSprite = new TQuad('assets/textures/bg/bg.png');
-        this.bgSprite.mesh.position.z = -1;
-        this.planet = new TQuad('assets/textures/bg/mars.png');
-        this.player = new Player();
-        this.atmosphere1 = new TQuad('assets/textures/bg/mars_atmosphere1.png');
-        this.atmosphere1.mesh.position.z = 2;
-        this.atmosphere2 = new TQuad('assets/textures/bg/mars_atmosphere2.png');
-        this.atmosphere2.mesh.position.z = 2;
-
+        this.player = new Player(game, {});
         this.player.addTo(this.scene2d);
-        this.worldObject = new THREE.Object3D();
+        this.mars = new Mars(game);
 
         this.ships = [];
 
         // random angle
         for(var i = 0; i < 4; i++) {
-            var ship = new Ship({
+            var ship = new Ship(game, {
                 distance: i*20 + 300,
                 rotation: Math.random() * Math.PI * 2,
                 speed: Math.random() - 0.5
             });
-            ship.addTo(this.worldObject);
+            ship.addTo(this.mars);
             this.ships.push(ship);
         }
 
-        this.worldObject.add(this.bgSprite.mesh);
-        this.worldObject.add(this.atmosphere1.mesh);
-        this.worldObject.add(this.planet.mesh);
-        this.worldObject.add(this.atmosphere2.mesh);
-        this.scene2d.add(this.worldObject);
+        this.mars.addTo(this.scene2d);
         this.controllers.push(this.update.bind(this));
     };
 
     PlayState.prototype.update = function(game, dt){
         var rotation = 0;
+        if( game.input.keys[87] ) {
+            this.player.fire(game, this.mars);
+        }
+
         if( game.input.keys[68] ) {
             rotation -= dt * Math.PI / 1600;
+            this.player.direction(false);
         }
         if( game.input.keys[65] ) {
             rotation += dt * Math.PI / 1600;
+            this.player.direction(true);
         }
+
+        this.mars.rotate(rotation);
+
         this.ships.forEach(function(ship) {
             ship.rotate( dt * ship.speed * Math.PI / 1800);
         });
 
         this.player.update(game, dt);
 
-        this.worldObject.rotation.z += rotation;
-
-        this.worldObject.position.set( this.cx, 400, 0 );
     }
 
 
