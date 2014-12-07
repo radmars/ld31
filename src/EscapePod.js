@@ -14,15 +14,16 @@ var EscapePod = (function() {
 
         this.alive = true;
         this.life = 10000;
+        this.waitOnPlanet = 5000;
         //collideCooldown prevents collision until X ms
-
+        this.men = 1;
         this.trailCounter = 0;
 
         this.counter = 0;
         this.quad.mesh.rotation.z = rotation.z
         this.quad.mesh.position.x = position.x + offset.x;
         this.quad.mesh.position.y = position.y + offset.y;
-        this.quad.mesh.position.z = 4;
+        this.quad.mesh.position.z = 0;
         this.planet = planet;
         this.planet.add(this.quad.mesh);
 
@@ -31,13 +32,17 @@ var EscapePod = (function() {
         this.speed = 100;
         this.vel = this.quad.mesh.position.clone();
         this.vel = this.vel.sub(this.planetPos);
-        this.vel.setLength(this.speed*-1);
+        this.vel.setLength(this.speed);
         //console.log(this.vel);
 
         this.particleTimer = 0;
     }
 
     EscapePod.prototype.gravitize = function( blackhole, dt ) {
+        if(this.waitOnPlanet > 0){
+            return;
+        }
+
         var pos = this.quad.mesh.position;
         var toHole = pos.clone();
         toHole.sub(blackhole.quad.mesh.position);
@@ -63,9 +68,14 @@ var EscapePod = (function() {
             this.vel.setLength(this.speed);
         }
 
-        this.quad.mesh.rotation.z = Math.atan2(this.vel.y, this.vel.x) - Math.PI*0.5;
-        pos.x += this.vel.x * dt/1000;
-        pos.y += this.vel.y * dt/1000;
+        this.quad.mesh.rotation.z = Math.atan2(this.vel.y, this.vel.x) + Math.PI*0.5;
+
+        if(this.waitOnPlanet > 0){
+            this.waitOnPlanet-=dt;
+        }else{
+            pos.x += this.vel.x * dt/1000;
+            pos.y += this.vel.y * dt/1000;
+        }
 
         if(this.alive && this.life <= 0){
             this.alive = false;
