@@ -53,18 +53,9 @@ var PlayState = (function() {
         this.enemyId = Math.floor(Math.random() * 3 + 1);
 
         this.mouthSpot = {
-            1: {
-                x: 40,
-                y: 0
-            },
-            2: {
-                x: 0,
-                y: 0
-            },
-            3: {
-                x: 0,
-                y: 0
-            }
+            1: { x: -13, y: 30 },
+            2: { x: -25, y: 40 },
+            3: { x: -20, y: 40 }
         }[this.enemyId];
 
         this.fireCounter = 0;
@@ -223,10 +214,9 @@ var PlayState = (function() {
 
         if(this.blackhole && ! this.blackhole.closed) {
             this.missiles.forEach(function( m ) {
-                m.gravitize(self.blackhole);
+                m.gravitize(self.blackhole, dt);
             });
         }
-
 
         if( game.input.keys[68] ) {
             rotation -= dt * Math.PI / 1600;

@@ -15,7 +15,6 @@ var Missile = (function() {
         this.alive = true;
         this.trailCounter = 0;
         this.counter = 0;
-        this.startPosition = { x: position.x, y: position.y };
         this.quad.mesh.rotation.z = rotation.z
         this.quad.mesh.position.x = position.x + offset.x;
         this.quad.mesh.position.y = position.y + offset.y;
@@ -24,27 +23,46 @@ var Missile = (function() {
         this.planet.add(this.quad.mesh);
 
         this.particleTimer = 0;
-        this.calculatePosition();
     }
 
     // more trig,  or something.
-    Missile.prototype.calculatePosition = function() {
+    Missile.prototype.fall = function(dt) {
         var n = this.quad.mesh.position.clone();
         n.z = 0;
-        this.quad.mesh.position.y = this.startPosition.y * (1 - this.counter / 3000);
-        this.quad.mesh.position.x = this.startPosition.x * (1 - this.counter / 3000);
+        n.normalize();
+        this.quad.mesh.position.y -= dt / 100 * n.y;
+        this.quad.mesh.position.x -= dt / 100 * n.x;
     }
 
-    Missile.prototype.gravitize = function( blackhole ) {
-
+    Missile.prototype.gravitize = function( blackhole, dt ) {
+        var pos = this.quad.mesh.position;
+        var dir = pos.clone();
+        var pull = blackhole.quad.mesh.position.clone();
+        pull.z = pos.z;
+        var distance = pos.distanceTo(pull);
+        if( distance < 100 ) {
+            dir.sub(pull);
+            dir.normalize();
+            pos.x -= dir.x * distance * dt / 1000;
+            pos.y -= dir.y * distance * dt / 1000;
+            if( distance < 25 ) {
+                // TODO: add explosions here.
+                this.alive = false;
+                this.planet.remove(this.quad.mesh);
+            }
+        }
     }
 
     Missile.prototype.update = function(game, dt) {
         this.counter += dt;
         this.trailCounter += dt;
         this.particleTimer += dt;
-        if( this.counter < 3000 ) {
-            this.calculatePosition();
+        var pos = this.quad.mesh.position;
+
+        // planet surface is roughly 100px sigh
+        // TODO scalign???!?!
+        if( pos.distanceTo(new THREE.Vector3( 0, 0, pos.z ) ) > 100 ) {
+            this.fall(dt);
 
             if(this.particleTimer > 1000 && Math.random() > .99) {
                 this.particleTimer = 0;
