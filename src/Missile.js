@@ -13,7 +13,7 @@ var Missile = (function() {
         offset = rotateV( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
         this.alive = true;
-        this.life = 5000;
+        this.life = 10000;
         //collideCooldown prevents collision until X ms
         this.collideCooldown = 1000;
         this.trailCounter = 0;
@@ -30,10 +30,10 @@ var Missile = (function() {
 
         this.planetPos = new THREE.Vector3( 0, 0, 0);
 
-        this.speed = -50;
+        this.speed = 50;
         this.vel = this.quad.mesh.position.clone();
         this.vel = this.vel.sub(this.planetPos);
-        this.vel.setLength(this.speed);
+        this.vel.setLength(this.speed*-1);
         //console.log(this.vel);
 
         this.particleTimer = 0;
