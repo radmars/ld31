@@ -71,7 +71,7 @@ var PlayState = (function() {
                 },
             ],
         });
-        this.speed = options.speed
+        this.speed = options.speed;
         if(options.speed > 0) {
             this.quad.mesh.scale.x *= -1;
             this.mouthSpot.x *= -1;
@@ -97,6 +97,7 @@ var PlayState = (function() {
     Ship.prototype.update = function( dt, planet ) {
         this.planet = planet;
         this.fireCounter += dt;
+
         if(!this.firing){
          this.rotate( dt * this.speed * Math.PI / 1800);
         }
@@ -154,7 +155,7 @@ var PlayState = (function() {
             }
         ]
          .concat(mapAnimationAssets(1, 'robot/idle'))
-         .concat(mapAnimationAssets(1, 'tinyman/die'))
+         .concat(mapAnimationAssets(2, 'tinyman/die'))
          .concat(mapAnimationAssets(1, 'tinyman/idle'))
          .concat(mapAnimationAssets(2, 'enemies/1'))
          .concat(mapAnimationAssets(2, 'enemies/2'))
@@ -242,6 +243,9 @@ var PlayState = (function() {
     PlayState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
 
+        this.mars.atmosphere1.mesh.rotation.z -= dt/1000*0.05;
+        this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
+
         var self = this;
         var rotation = 0;
         if( game.input.keys[87] ) {
@@ -250,7 +254,6 @@ var PlayState = (function() {
                 this.blackholes.push(blackhole);
             }
         }
-
 
         //if(!this.player.firing) {
             if( game.input.keys[68] ) {
@@ -289,9 +292,19 @@ var PlayState = (function() {
             this.ships.push(ship);
         }
 
-        for(var i = 0; i < this.mans.length; i++){
-            this.mans[i].update(game, dt);
+       // console.log(this.mans.length);
+        if(this.mans.length < 5){
+           var man =  new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1})
+           man.addTo(this.mars);
+           this.mans.push(man);
         }
+
+        this.mans.forEach(function(man) {
+            man.update(game, dt);
+            if(! man.alive){
+                self.mans.remove(man);
+            }
+        });
 
         this.ships.forEach(function(ship) {
             ship.update(dt, self.mars);
@@ -337,6 +350,31 @@ var PlayState = (function() {
             if(missile.quad.mesh.position.length() <= 105){
                 missile.life = 0;
                 self.shakeTime = 500;
+                //did it hit a man?
+
+                self.mans.forEach(function(man) {
+                    var missileToMan = man.quad.mesh.position.clone();
+                    missileToMan.sub(missile.quad.mesh.position);
+                    if(missileToMan.length() < 64 ){
+
+                        missileToMan.setLength(100 + Math.random()*50);
+
+                        self.particles.push(
+                            new Particle(game, {
+                                asset: 'tinyman/die',
+                                frames: 2,
+                                planet: self.mars,
+                                life:5000,
+                                velX:missileToMan.x,
+                                velY:missileToMan.y,
+                                rotateSpeed:4.0,
+                                position: { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }
+                            })
+                        );
+                        man.die();
+                        //TODO: spawn blood / man particle!
+                    }
+                });
             }
 
             missile.update(game, dt);

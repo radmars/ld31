@@ -12,6 +12,7 @@ var Man = (function() {
 
         this.speed = options.speed || Math.PI / 5;
         this.rotate(options.rotation || 0);
+        this.alive = true;
     }
 
     Man.prototype.rotate = function(rotation) {
@@ -34,6 +35,13 @@ var Man = (function() {
     Man.prototype.addTo = function(container){
         this.container = container;
         container.add(this.quad.mesh);
+    }
+
+    Man.prototype.die = function(){
+        if(this.alive){
+            this.alive = false;
+            this.container.remove(this.quad.mesh);
+        }
     }
 
     Man.prototype.direction = function(right) {

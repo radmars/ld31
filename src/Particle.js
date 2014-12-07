@@ -9,6 +9,11 @@ var Particle = (function() {
         var life =  options.life || 1000;
         var position = options.position;
         var offset   = options.offset || { x: 0, y: 0 };
+        var velX = options.velX || 0;
+        var velY = options.velY || 0;
+
+        this.rotateSpeed = options.rotateSpeed || 0;
+
 
         this.quad = new TQuad(game, {
             animations: [
@@ -22,7 +27,7 @@ var Particle = (function() {
         this.rotation = 0;
         offset = rotateV( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
-        this.vel = new THREE.Vector3( 0, 0, 0);
+        this.vel = new THREE.Vector3( velX, velY, 0);
         this.life = life;
         this.alive = true;
         this.quad.mesh.rotation.z = 0;
@@ -31,6 +36,8 @@ var Particle = (function() {
         this.quad.mesh.position.z = 4;
         this.planet = planet;
         this.planet.add(this.quad.mesh);
+
+
         //this.cb = this.update.bind(this);
         //game.state.controllers.push(this.cb);
     }
@@ -38,11 +45,18 @@ var Particle = (function() {
     Particle.prototype.update = function(game, dt) {
         this.life -= dt;
         this.quad.update(dt);
+        var pos = this.quad.mesh.position;
+        pos.x += this.vel.x * dt/1000;
+        pos.y += this.vel.y * dt/1000;
+
+        this.quad.mesh.rotation.z += this.rotateSpeed*dt/1000;
+
         if( this.life <  0) {
             if(this.alive){
                 //console.log("removing!");
                 this.alive = false;
                 this.planet.remove(this.quad.mesh);
+
                 //game.state.controllers.remove(this.cb);
             }
         }
