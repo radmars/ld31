@@ -191,7 +191,7 @@ var PlayState = (function() {
         this.particles = [];
 
         // random angle
-        for(var i = 0; i < 1; i++) {
+        for(var i = 0; i < 10; i++) {
             var ship = new Ship(game, {
                 distance: Math.random() * 150 + 250,
                 rotation: Math.random() * Math.PI * 2,
