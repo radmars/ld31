@@ -23,7 +23,19 @@ var PlayState = (function() {
         this.ship = ship;
         this.planet = planet;
         this.planet.add(this.quad.mesh);
+
+        this.trails = new TQuad(game, {
+            frames: TQuad.enumerate( 4, 'missile/trail' ),
+            frameTime: 100
+        });
+        this.trails.mesh.rotation.z = rotation.z
+        this.trails.mesh.position.x = position.x + offset.x;
+        this.trails.mesh.position.y = position.y + offset.y;
+        this.trails.mesh.position.z = 4;
+        planet.add(this.trails.mesh);
+
         this.calculatePosition();
+
     }
 
     function rotate( v, r ) {
@@ -39,15 +51,19 @@ var PlayState = (function() {
         n.z = 0;
         this.quad.mesh.position.y = this.startPosition.y * (1 - this.counter / 3000);
         this.quad.mesh.position.x = this.startPosition.x * (1 - this.counter / 3000);
+        this.trails.mesh.position.y = this.startPosition.y * (1.05 - this.counter / 3000 );
+        this.trails.mesh.position.x = this.startPosition.x * (1.05 - this.counter / 3000 );
     }
 
     Missile.prototype.update = function(game, dt) {
         this.counter += dt;
         if( this.counter < 3000 ) {
+            this.trails.update(dt);
             this.calculatePosition();
         }
         else {
             this.planet.remove(this.quad.mesh);
+            this.planet.remove(this.trails.mesh);
             this.ship.missile = null;
         }
     };
