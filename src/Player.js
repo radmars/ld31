@@ -18,7 +18,7 @@ var Player = (function() {
         var m = new THREE.Matrix4().makeRotationZ(-this.rotation);
         converted.applyMatrix4(m);
 
-        this.quad.mesh.rotation.z = this.rotation;
+        this.quad.mesh.rotation.z = - this.rotation;
         this.quad.mesh.position.y = converted.y;
         this.quad.mesh.position.x = converted.x;
     }
