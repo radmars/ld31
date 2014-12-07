@@ -1,11 +1,17 @@
 var PlayState = (function() {
     "use strict;"
 
+    var pixelize = function(t) {
+        t.magFilter = THREE.NearestFilter;
+        t.minFilter = THREE.LinearMipMapLinearFilter;
+    };
+
     function Mars(game) {
-        this.bgSprite    = new TQuad(game, 'assets/textures/bg/bg.png');
-        this.planet      = new TQuad(game, 'assets/textures/bg/mars.png');
-        this.atmosphere1 = new TQuad(game, 'assets/textures/bg/mars_atmosphere1.png');
-        this.atmosphere2 = new TQuad(game, 'assets/textures/bg/mars_atmosphere2.png');
+        this.bgSprite    = new TQuad(game, { frames: ['assets/textures/bg/bg.png']});
+        this.planet      = new TQuad(game, { frames: ['assets/textures/bg/mars.png']});
+        this.atmosphere1 = new TQuad(game, { frames: ['assets/textures/bg/mars_atmosphere1.png']});
+        this.atmosphere2 = new TQuad(game, { frames: ['assets/textures/bg/mars_atmosphere2.png']});
+
         this.bgSprite.mesh.position.z    = -1;
         this.atmosphere1.mesh.position.z = 2;
         this.atmosphere2.mesh.position.z = 2;
@@ -44,7 +50,7 @@ var PlayState = (function() {
     }
 
     function Ship(game, options) {
-        this.quad = new TQuad(game, 'placeholderArt/ship.png');
+        this.quad = new TQuad(game, {frames: ['placeholderArt/ship.png']});
         this.speed = options.speed
         if(options.speed < 0) {
             this.quad.mesh.scale.x *= -1;
@@ -73,11 +79,7 @@ var PlayState = (function() {
 
     function PlayState() {
         State.call(this);
-        var pixelize = function(t) {
-            t.magFilter = THREE.NearestFilter;
-            t.minFilter = THREE.LinearMipMapLinearFilter;
-        };
-
+        
         this.assets = [
             {
                 name: 'assets/textures/bg/bg.png',
@@ -103,18 +105,27 @@ var PlayState = (function() {
                 name: 'placeholderArt/ship.png',
                 type: 'img',
                 callback: pixelize,
-            },
-            {
-                name:'assets/textures/robot/idle/1.png',
-                type: 'img',
-                callback: pixelize,
-            },
-            {
-                name: 'assets/textures/tinyman/die/1.png',
-                type: 'img',
-                callback: pixelize,
             }
-        ];
+        ]
+         .concat(mapAnimationAssets(1, 'robot/idle'))
+         .concat(mapAnimationAssets(1, 'tinyman/die'))
+         .concat(mapAnimationAssets(1, 'tinyman/idle'))
+         .concat(mapAnimationAssets(1, 'tinyman/run'))
+         .concat(mapAnimationAssets(3, 'blackhole/open'))
+         .concat(mapAnimationAssets(3, 'blackhole/close'))
+         .concat(mapAnimationAssets(4, 'blackhole/idle'))
+         .concat(mapAnimationAssets(4, 'missile/trail'))
+         .concat(mapAnimationAssets(4, 'blackhole/idle'))
+    };
+
+    function mapAnimationAssets( count, name ) {
+        return TQuad.enumerate(count,name).map(function(file) {
+            return {
+                name: file,
+                type: 'img',
+                callback: pixelize
+            };
+        });
     };
 
     PlayState.prototype = Object.create(State.prototype);
@@ -142,9 +153,9 @@ var PlayState = (function() {
         this.ships = [];
 
         // random angle
-        for(var i = 0; i < 4; i++) {
+        for(var i = 0; i < 40; i++) {
             var ship = new Ship(game, {
-                distance: i*20 + 300,
+                distance: Math.random() * 150 + 250,
                 rotation: Math.random() * Math.PI * 2,
                 speed: Math.random() - 0.5
             });
