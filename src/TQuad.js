@@ -1,5 +1,5 @@
 var TQuad = (function() {
-    "use strict;"
+    "use strict";
 
     // magic number makes the game look good.
     var scale = 2;

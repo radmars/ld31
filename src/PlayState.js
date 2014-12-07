@@ -1,19 +1,12 @@
 var PlayState = (function() {
-    "use strict;"
+    "use strict";
 
     var pixelize = function(t) {
         t.magFilter = THREE.NearestFilter;
         t.minFilter = THREE.LinearMipMapLinearFilter;
     };
 
-    function rotate( v, r ) {
-        var m = new THREE.Matrix4().makeRotationZ(r);
-        var v = v.clone();
-        v.applyMatrix4(m);
-        return v;
-    }
-
-    function Missile(game, ship, planet, rotation, position, offset) {
+    function Missile(game, planet, rotation, position, offset) {
         this.quad = new TQuad(game, {
             animations: [
                 {
@@ -23,7 +16,7 @@ var PlayState = (function() {
         });
 
         this.rotation = rotation.z;
-        offset = rotate( new THREE.Vector3( offset.x, offset.y ), this.rotation );
+        offset = rotateV( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
         this.alive = true;
         this.trailCounter = 0;
@@ -33,10 +26,10 @@ var PlayState = (function() {
         this.quad.mesh.position.x = position.x + offset.x;
         this.quad.mesh.position.y = position.y + offset.y;
         this.quad.mesh.position.z = 4;
-        this.ship = ship;
         this.planet = planet;
         this.planet.add(this.quad.mesh);
 
+        this.particleTimer = 0;
         this.calculatePosition();
     }
 
@@ -51,8 +44,22 @@ var PlayState = (function() {
     Missile.prototype.update = function(game, dt) {
         this.counter += dt;
         this.trailCounter += dt;
+        this.particleTimer += dt;
         if( this.counter < 3000 ) {
             this.calculatePosition();
+
+            if(this.particleTimer > 1000 && Math.random() > .99) {
+                this.particleTimer = 0;
+                new Particle(game, {
+                    asset: 'missile/trail',
+                    frames: 4,
+                    planet: this.planet,
+                    position: { x: 0, y: 0, z: 5 },
+                    //rotation: this.quad.mesh.rotation,
+                    //position: this.quad.mesh.position,
+                    //offset: { y: -8, x: 0 },
+                });
+            }
         }
         else {
             if(this.alive){
@@ -60,37 +67,6 @@ var PlayState = (function() {
                 this.planet.remove(this.quad.mesh);
             }
         }
-    };
-
-    function Particle(asset, frames, game, planet, rotation, position, offset) {
-        this.quad = new TQuad(game, {
-            animations: [
-                {
-                    frames: TQuad.enumerate( frames, asset ),
-                    frameTime: 100
-                },
-            ],
-        });
-
-
-        offset = offset || {x:0, y:0};
-        this.rotation = rotation.z;
-        offset = rotate( new THREE.Vector3( offset.x, offset.y ), this.rotation );
-
-        this.vel = new THREE.Vector3( 0, 0, 0);
-        this.life = 1000;
-
-        this.startPosition = { x: position.x, y: position.y };
-        this.quad.mesh.rotation.z = rotation.z;
-        this.quad.mesh.position.x = position.x + offset.x;
-        this.quad.mesh.position.y = position.y + offset.y;
-        this.quad.mesh.position.z = 4;
-        this.planet = planet;
-        this.planet.add(this.quad.mesh);
-    }
-
-    Particle.prototype.update = function(game, dt) {
-        this.life -= dt;
     };
 
 
@@ -270,7 +246,6 @@ var PlayState = (function() {
 
     PlayState.prototype.onStart = function(game) {
         var self = this;
-        hack = game;
 
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
@@ -299,10 +274,11 @@ var PlayState = (function() {
         }
 
         this.mars.addTo(this.scene2d);
-        this.controllers.push(this.update.bind(this));
     };
 
     PlayState.prototype.update = function(game, dt){
+        State.prototype.update.call(this, game, dt);
+
         var self = this;
         var rotation = 0;
         if( game.input.keys[87] ) {
@@ -326,7 +302,7 @@ var PlayState = (function() {
 
             if(ship.fireCounter > ship.fireCounterMax){
                 ship.fire();
-                self.missiles.push( new Missile( game, ship, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
+                self.missiles.push( new Missile( game, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
             }
         });
 

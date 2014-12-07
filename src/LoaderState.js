@@ -1,5 +1,5 @@
 var LoaderState = (function() {
-    "use strict;"
+    "use strict";
 
     function LoaderState( nextState ) {
         State.call(this);

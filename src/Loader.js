@@ -1,5 +1,5 @@
 var Loader = (function() {
-    "use strict;"
+    "use strict";
     function Loader() {
         var self = this;
         this.assets = {};

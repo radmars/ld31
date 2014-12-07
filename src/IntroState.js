@@ -1,4 +1,5 @@
 var IntroState = (function(){
+    "use strict";
     function IntroState( nextState ) {
         State.call(this);
         this.glassesFiles = [

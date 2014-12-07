@@ -1,5 +1,5 @@
 var State = (function() {
-    "use strict;"
+    "use strict";
     function State() {
 
         // controllers are function that takes a delta time and the game.

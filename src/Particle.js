@@ -9,7 +9,6 @@ var Particle = (function() {
         var position = options.position;
         var offset   = options.offset || { x: 0, y: 0 };
 
-                    console.log( TQuad.enumerate( frames, asset ) );
         this.quad = new TQuad(game, {
             animations: [
                 {
@@ -33,7 +32,6 @@ var Particle = (function() {
         this.planet = planet;
         var self = this;
 
-    console.log(game.state);
         game.operations.push(function(){
             self.planet.add(self.quad.mesh);
             self.cb = self.update.bind(self);
@@ -44,10 +42,8 @@ var Particle = (function() {
     Particle.prototype.update = function(game, dt) {
         this.life -= dt;
         this.quad.update(dt);
-        console.log("Updating??");
         if( this.life <  0) {
-            console.log( "Removing" );
-            this.planet.remove(this.mesh);
+            this.planet.remove(this.quad.mesh);
             game.state.controllers.remove(this.cb);
         }
     };

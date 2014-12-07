@@ -14,8 +14,16 @@ Object.defineProperty(Array.prototype, "remove", {
     }
 });
 
+function rotateV( v, r ) {
+    var m = new THREE.Matrix4().makeRotationZ(r);
+    var v = v.clone();
+    v.applyMatrix4(m);
+    return v;
+}
+
+
 var Game = (function(){
-    "use strict;"
+    "use strict";
     function InputManager(element) {
         var self = this;
         this.element = element;

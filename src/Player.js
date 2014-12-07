@@ -1,5 +1,5 @@
 var Player = (function() {
-    "use strict;"
+    "use strict";
 
     function Blackhole(game, planet) {
         this.quad = new TQuad(game, {
