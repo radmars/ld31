@@ -104,6 +104,7 @@ var Player = (function() {
         if(!this.blackhole) {
             this.blackhole = new Blackhole(game, planet);
         }
+        return this.blackhole;
     }
 
     return Player;
