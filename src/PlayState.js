@@ -162,6 +162,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(4, 'missile/trail'))
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
+         .concat(mapAnimationAssets(5, 'particles/explode'))
     };
 
     function mapAnimationAssets( count, name ) {
@@ -253,6 +254,15 @@ var PlayState = (function() {
             missile.update(game, dt);
             if(!missile.alive){
                 self.missiles.remove(missile);
+                self.particles.push(
+                    new Particle(game, {
+                        asset: 'particles/explode',
+                        frames: 5,
+                        planet: self.mars,
+                        life:500,
+                        position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
+                    })
+                );
             }else{
                 ///*
                 if(missile.particleTimer > 150 ) {

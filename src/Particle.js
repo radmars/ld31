@@ -40,7 +40,7 @@ var Particle = (function() {
         this.quad.update(dt);
         if( this.life <  0) {
             if(this.alive){
-                console.log("removing!");
+                //console.log("removing!");
                 this.alive = false;
                 this.planet.remove(this.quad.mesh);
                 //game.state.controllers.remove(this.cb);
