@@ -127,7 +127,6 @@ var TextRenderer = (function(){
             var firstVertex = textures[texture.id].currentFace * 4;
             geometry.faces.push(new THREE.Face3(firstVertex, firstVertex + 1, firstVertex + 3));
             geometry.faces.push(new THREE.Face3(firstVertex, firstVertex + 3, firstVertex + 2));
-            console.log("GemO", geometry.faces);
             geometry.faceVertexUvs[0].push([
                 new THREE.Vector2(metrics.u, metrics.v),
                 new THREE.Vector2(metrics.u, metrics.v - metrics.h),

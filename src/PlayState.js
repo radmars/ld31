@@ -197,6 +197,7 @@ var PlayState = (function() {
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
         this.camera2d.position.z = 10;
         this.font = new TextRenderer.Font({
+            font: "monospace",
             size: 32,
             fgColor: 'white',
         });
@@ -253,16 +254,17 @@ var PlayState = (function() {
             this.score += Math.floor(this.scoreCounter/1000);
             this.scoreCounter = this.scoreCounter % 1000;
         }
-
         // attach properties like a jerk
         if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != this.score ) ) {
             if(this.scoreObject) {
-                this.mars.remove(this.scoreObject);
+                this.scene2d.remove(this.scoreObject);
             }
-            this.scoreObject = TextRenderer.render(this.font, "" + this.score);
+            this.scoreObject = TextRenderer.render(this.font, "Score: " + this.score);
             this.scoreObject.score = this.score;
+            this.scoreObject.position.x = 0; // this.cx*2;
+            this.scoreObject.position.y = 0; // this.cy*2;
             this.scoreObject.position.z = 4;
-            this.mars.add(this.scoreObject);
+            this.scene2d.add(this.scoreObject);
         }
     }
 
