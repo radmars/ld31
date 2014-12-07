@@ -8,6 +8,9 @@ var Loader = (function() {
         // how to load a texture
         this.loaders.img = function(asset, name) {
             var success = function(image) {
+                if(asset.callback) {
+                    asset.callback(image);
+                }
                 return self.assets[name] = image;
             };
             var error = function(error) {
