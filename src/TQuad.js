@@ -34,11 +34,10 @@ var TQuad = (function() {
                 frameTime: animation.frameTime,
             }
         });
-
-        self.setAnimation( options.current || Object.keys( self.animations )[0] );
+        var animationName = options.current || Object.keys( self.animations )[0]
 
         // Take a sample image and figure out how big it is.
-        var sample = self.currentAnimationData().materials[0];
+        var sample = this.animations[animationName].materials[0];
         self.width = sample.map.image.width;
         self.height = sample.map.image.height;
 
@@ -47,6 +46,7 @@ var TQuad = (function() {
         self.currentFrame = 0;
 
         self.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), sample );
+        self.setAnimation( animationName  );
         self.mesh.scale.set(
             self.width * scale,
             -self.height * scale,
@@ -74,6 +74,7 @@ var TQuad = (function() {
         if( this.timer > current.frameTime ) {
             this.timer = 0;
             this.currentFrame++;
+            this.mesh.material = materials[this.currentFrame % materials.length];
             if(this.currentFrame >= materials.length ) {
                 this.currentFrame = this.currentFrame % materials.length;
                 if(this.onFinish) {
@@ -82,13 +83,13 @@ var TQuad = (function() {
                     cb();
                 }
             }
-            this.mesh.material = materials[this.currentFrame];
         }
     }
 
-    TQuad.prototype.setAnimation = function( a, f ) {
+    TQuad.prototype.setAnimation = function( a, f, frame ) {
         this.onFinish = f;
         this.currentAnimation = a;
+        this.setFrame(frame || 0);
     }
 
     TQuad.prototype.setFrame = function( f ) {
