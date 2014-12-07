@@ -14,7 +14,6 @@ var Player = (function() {
                     frameTime: 100,
                     name: 'close',
                 },
-
                 {
                     frames: TQuad.enumerate( 3, 'blackhole/open' ),
                     frameTime: 100,
@@ -54,7 +53,7 @@ var Player = (function() {
         }
         else if( this.counter < 3000 ) {
             if( !this.opened ) {
-                this.quad.currentAnimation = 'idle'
+                this.quad.setAnimation('idle');
                 this.quad.setFrame(0)
                 this.opened = true;
             }
@@ -62,7 +61,7 @@ var Player = (function() {
         else if( this.counter < 4000 ) {
             if( ! this.closing) {
                 this.closing = true;
-                this.quad.currentAnimation = 'close';
+                this.quad.setAnimation('close');
                 this.quad.setFrame(0);
             }
         }
@@ -80,9 +79,16 @@ var Player = (function() {
                     frames: TQuad.enumerate(1, "robot/idle"),
                     frameTime: 100
                 },
+                {
+                    name: 'shoot',
+                    frames: TQuad.enumerate(20, "robot/shoot"),
+                    frameTime: 33
+                },
+
             ],
         });
 
+        this.blackholeTimer = 0;
         this.quad.mesh.position.set(
             game.width / 2,
             game.height / 2 - 128,
@@ -97,13 +103,8 @@ var Player = (function() {
     }
 
     Player.prototype.update = function(game, dt) {
-        if(this.blackhole) {
-            this.blackhole.update(game, dt);
-
-            if(this.blackhole.closed) {
-                this.blackhole = null;
-            }
-        }
+        this.quad.update(dt);
+        this.blackholeTimer += dt;
     }
 
     Player.prototype.direction = function(right) {
@@ -116,10 +117,18 @@ var Player = (function() {
     }
 
     Player.prototype.fire = function(game, planet) {
-        if(!this.blackhole) {
-            this.blackhole = new Blackhole(game, planet);
+        if(this.blackholeTimer > 1000) {
+            this.blackholeTimer = 0;
+            this.firing = true;
+
+            var self = this;
+            this.quad.setAnimation( 'shoot', function() {
+                self.firing = false;
+                self.quad.setAnimation('idle');
+            });
+
+            return new Blackhole(game, planet);
         }
-        return this.blackhole;
     }
 
     return Player;

@@ -45,9 +45,9 @@ var Missile = (function() {
         toHole.sub(blackhole.quad.mesh.position);
         //console.log(toHole.length());
         var dist = toHole.length();
-        var m = 1- (dist/100);
+        var m = 1- (dist/150);
 
-        if(dist <100){
+        if(dist <150){
             this.vel.x -= toHole.x*dt/1000 * m* m * 10;
             this.vel.y -= toHole.y*dt/1000 * m* m * 10;
         }
@@ -72,11 +72,6 @@ var Missile = (function() {
         this.quad.mesh.rotation.z = Math.atan2(this.vel.y, this.vel.x) - Math.PI*0.5;
         pos.x += this.vel.x * dt/1000;
         pos.y += this.vel.y * dt/1000;
-
-        //ghetto check vs planet!
-        if(pos.length() <= 105){
-            this.life = 0;
-        }
 
         if(this.alive && this.life <= 0){
             this.alive = false;

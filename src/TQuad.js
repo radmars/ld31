@@ -35,7 +35,7 @@ var TQuad = (function() {
             }
         });
 
-        self.currentAnimation = options.current || Object.keys( self.animations )[0];
+        self.setAnimation( options.current || Object.keys( self.animations )[0] );
 
         // Take a sample image and figure out how big it is.
         var sample = self.currentAnimationData().materials[0];
@@ -74,9 +74,21 @@ var TQuad = (function() {
         if( this.timer > current.frameTime ) {
             this.timer = 0;
             this.currentFrame++;
-            this.currentFrame = this.currentFrame % materials.length;
+            if(this.currentFrame >= materials.length ) {
+                this.currentFrame = this.currentFrame % materials.length;
+                if(this.onFinish) {
+                    var cb = this.onFinish;
+                    this.onFinish = null;
+                    cb();
+                }
+            }
             this.mesh.material = materials[this.currentFrame];
         }
+    }
+
+    TQuad.prototype.setAnimation = function( a, f ) {
+        this.onFinish = f;
+        this.currentAnimation = a;
     }
 
     TQuad.prototype.setFrame = function( f ) {
