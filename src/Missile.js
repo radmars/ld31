@@ -65,6 +65,10 @@ var Missile = (function() {
             this.collideCooldown-=dt;
         }
 
+        if(this.vel.length() < this.speed){
+            this.vel.setLength(this.speed);
+        }
+
         this.quad.mesh.rotation.z = Math.atan2(this.vel.y, this.vel.x) - Math.PI*0.5;
         pos.x += this.vel.x * dt/1000;
         pos.y += this.vel.y * dt/1000;
