@@ -150,11 +150,13 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(2, 'enemies/2'))
          .concat(mapAnimationAssets(2, 'enemies/3'))
          .concat(mapAnimationAssets(2, 'tinyman/run'))
+         .concat(mapAnimationAssets(20, 'robot/shoot'))
          .concat(mapAnimationAssets(3, 'blackhole/close'))
          .concat(mapAnimationAssets(3, 'blackhole/open'))
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
-         .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(4, 'missile/trail'))
+         .concat(mapAnimationAssets(4, 'robot/jump'))
+         .concat(mapAnimationAssets(4, 'robot/walk'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
     };
 
@@ -205,11 +207,11 @@ var PlayState = (function() {
         }
 
         // random angle
-        for(var i = 0; i < 1; i++) {
+        for(var i = 0; i < 5; i++) {
             var ship = new Ship(game, {
                 distance: 350,//Math.random() * 150 + 250,
                 rotation: Math.random() * Math.PI * 2,
-                speed: 0//Math.random() - 0.5
+                speed: Math.random() - 0.5
             });
             ship.addTo(this.mars);
             this.ships.push(ship);
@@ -227,14 +229,15 @@ var PlayState = (function() {
             this.blackhole = this.player.fire(game, this.mars);
         }
 
-
-        if( game.input.keys[68] ) {
-            rotation -= dt * Math.PI / 1600;
-            this.player.direction(false);
-        }
-        if( game.input.keys[65] ) {
-            rotation += dt * Math.PI / 1600;
-            this.player.direction(true);
+        if(!this.player.firing) {
+            if( game.input.keys[68] ) {
+                rotation -= dt * Math.PI / 1600;
+                this.player.direction(false);
+            }
+            if( game.input.keys[65] ) {
+                rotation += dt * Math.PI / 1600;
+                this.player.direction(true);
+            }
         }
 
         this.mars.rotate(rotation);
@@ -275,8 +278,8 @@ var PlayState = (function() {
                         position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
                     })
                 );
-            }else{
-                ///*
+            }
+            else {
                 self.ships.forEach(function(ship) {
                     var shipToMissile = ship.quad.mesh.position.clone();
                     shipToMissile.sub(missile.quad.mesh.position);
@@ -288,7 +291,6 @@ var PlayState = (function() {
                 });
 
                 if(missile.particleTimer > 150 ) {
-                    //console.log("creating particle");
                     missile.particleTimer = 0;
                     self.particles.push(
                         new Particle(game, {
@@ -299,9 +301,7 @@ var PlayState = (function() {
                             position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
                         })
                     );
-                    //console.log("particle added");
                 }
-                //*/
             }
         });
 
