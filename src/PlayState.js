@@ -191,9 +191,15 @@ var PlayState = (function() {
     PlayState.prototype.onStart = function(game) {
         var self = this;
 
+        this.score = 0;
+
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
         this.camera2d.position.z = 10;
+        this.font = new TextRenderer.Font({
+            size: 32,
+            fgColor: 'white',
+        });
 
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
@@ -203,6 +209,7 @@ var PlayState = (function() {
         this.mars = new Mars(game);
 
         this.shakeTime = 0;
+        this.scoreCounter = 0;
 
         this.ships = [];
         this.missiles = [];
@@ -240,11 +247,31 @@ var PlayState = (function() {
         this.mars.addTo(this.scene2d);
     };
 
+    PlayState.prototype.updateScore = function(dt) {
+        this.scoreCounter += dt;
+        if(this.scoreCounter > 1000) {
+            this.score += Math.floor(this.scoreCounter/1000);
+            this.scoreCounter = this.scoreCounter % 1000;
+        }
+
+        // attach properties like a jerk
+        if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != this.score ) ) {
+            if(this.scoreObject) {
+                this.mars.remove(this.scoreObject);
+            }
+            this.scoreObject = TextRenderer.render(this.font, "" + this.score);
+            this.scoreObject.score = this.score;
+            this.scoreObject.position.z = 4;
+            this.mars.add(this.scoreObject);
+        }
+    }
+
     PlayState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
 
         this.mars.atmosphere1.mesh.rotation.z -= dt/1000*0.05;
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
+        this.updateScore(dt);
 
         var self = this;
         var rotation = 0;
@@ -392,14 +419,17 @@ var PlayState = (function() {
                 );
             }
             else {
-                self.ships.forEach(function(ship) {
+
+                for(var i = 0; i < self.ships.length; i++ ) {
+                    var ship = self.ships[i];
                     var shipToMissile = ship.quad.mesh.position.clone();
                     shipToMissile.sub(missile.quad.mesh.position);
                     if(shipToMissile.length() < 32 && missile.collideCooldown <=0 ){
+                        self.score += 10;
                         missile.life = 0;
                         ship.die();
                     }
-                });
+                }
 
                 //collide with other missiles!!
                 self.missiles.forEach(function(missile2) {
