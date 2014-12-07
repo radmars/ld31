@@ -3,8 +3,19 @@ var Player = (function() {
 
     function Blackhole(game, planet) {
         this.quad = new TQuad(game, {
-            frames: TQuad.enumerate( 3, 'blackhole/open' ),
-            frameTime: 100
+            animations: [
+                {
+                    frames: TQuad.enumerate( 4, 'blackhole/idle' ),
+                    frameTime: 100,
+                    name: 'idle',
+                },
+                {
+                    frames: TQuad.enumerate( 3, 'blackhole/open' ),
+                    frameTime: 100,
+                    name: 'open',
+                },
+            ],
+            current: 'open',
         });
 
         this.counter = 0;
@@ -35,21 +46,8 @@ var Player = (function() {
         }
         else if( this.counter < 3000 ) {
             if( !this.opened ) {
-
-                var rotation = this.quad.mesh.rotation;
-                var position = this.quad.mesh.position;
-                this.planet.remove(this.quad.mesh);
-                this.quad = new TQuad(game, {
-                    frames: TQuad.enumerate( 4, 'blackhole/idle' ),
-                    frameTime: 100
-                });
-                this.quad.mesh.rotation.x = rotation.x;
-                this.quad.mesh.rotation.y = rotation.y;
-                this.quad.mesh.rotation.z = rotation.z;
-                this.quad.mesh.position.x = position.x;
-                this.quad.mesh.position.y = position.y;
-                this.quad.mesh.position.z = position.z;
-                this.planet.add(this.quad.mesh);
+                this.quad.currentAnimation = 'idle'
+                this.quad.setFrame(0)
                 this.opened = true;
             }
         }
@@ -61,8 +59,13 @@ var Player = (function() {
 
     function Player(game, options){
         this.quad = new TQuad(game, {
-            frames: ['assets/textures/robot/idle/1.png'],
-            frameTime: 100
+            animations: [
+                {
+                    name: 'idle',
+                    frames: TQuad.enumerate(1, "robot/idle"),
+                    frameTime: 100
+                },
+            ],
         });
     }
 

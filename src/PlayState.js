@@ -8,7 +8,11 @@ var PlayState = (function() {
 
     function Missile(game, ship, planet, rotation, position, offset) {
         this.quad = new TQuad(game, {
-            frames: [ 'assets/textures/missile/missile.png' ],
+            animations: [
+                {
+                    frames: [ 'assets/textures/missile/missile.png' ],
+                },
+            ],
         });
 
         this.rotation = rotation.z;
@@ -25,8 +29,12 @@ var PlayState = (function() {
         this.planet.add(this.quad.mesh);
 
         this.trails = new TQuad(game, {
-            frames: TQuad.enumerate( 4, 'missile/trail' ),
-            frameTime: 100
+            animations: [
+                {
+                    frames: TQuad.enumerate( 4, 'missile/trail' ),
+                    frameTime: 100
+                },
+            ]
         });
         this.trails.mesh.rotation.z = rotation.z
         this.trails.mesh.position.x = position.x + offset.x;
@@ -70,10 +78,10 @@ var PlayState = (function() {
 
 
     function Mars(game) {
-        this.bgSprite    = new TQuad(game, { frames: ['assets/textures/bg/bg.png']});
-        this.planet      = new TQuad(game, { frames: ['assets/textures/bg/mars.png']});
-        this.atmosphere1 = new TQuad(game, { frames: ['assets/textures/bg/mars_atmosphere1.png']});
-        this.atmosphere2 = new TQuad(game, { frames: ['assets/textures/bg/mars_atmosphere2.png']});
+        this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
+        this.planet      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
+        this.atmosphere1 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere1.png']}]});
+        this.atmosphere2 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere2.png']}]});
 
         this.bgSprite.mesh.position.z    = -1;
         this.atmosphere1.mesh.position.z = 2;
@@ -131,7 +139,12 @@ var PlayState = (function() {
         }[this.enemyId];
 
         this.quad = new TQuad(game, {
-            frames: TQuad.enumerate( 2, 'enemies/' + this.enemyId),
+            animations: [
+                {
+                    frames: TQuad.enumerate( 2, 'enemies/' + this.enemyId),
+                    name: 'idle',
+                },
+            ],
         });
         this.speed = options.speed
         if(options.speed > 0) {

@@ -5,32 +5,60 @@ var TQuad = (function() {
     var scale = 2;
 
     // A textured quad.
+    // ex:
+    // new TQuad( game, {
+    //     animations: [{
+    //          frames: [1.png, 2.png]
+    //          frameTime: 100,
+    //          name: 'awesome'
+    //     }],
+    //     current: 'awesome'
+    // })
+    //
+    // defaults to first key animation without current.
+    // assumes every frame is same size.
     function TQuad(game, options) {
-        this.materials = options.frames.map(function(file) {
-            return new THREE.MeshBasicMaterial({
-                map: game.loader.get( file ),
-                color: 0xffffff,
-                transparent: true,
-                // In order to support flipping need two sides...
-                side: THREE.DoubleSide
-            });
+        var self = this;
+        self.animations =  {}
+        options.animations.forEach(function( animation ) {
+            self.animations[animation.name] = {
+                materials: animation.frames.map(function(file) {
+                    return new THREE.MeshBasicMaterial({
+                        map: game.loader.get( file ),
+                        color: 0xffffff,
+                        transparent: true,
+                        // In order to support flipping need two sides...
+                        side: THREE.DoubleSide
+                    });
+                }),
+                frameTime: animation.frameTime,
+            }
         });
 
-        this.width = this.materials[0].map.image.width;
-        this.height = this.materials[0].map.image.height;
+        self.currentAnimation = options.current || Object.keys( self.animations )[0];
 
-        this.timer = 0;
-        this.frameTime = options.frameTime;
-        this.currentFrame = 0;
+        // Take a sample image and figure out how big it is.
+        var sample = self.currentAnimationData().materials[0];
+        self.width = sample.map.image.width;
+        self.height = sample.map.image.height;
 
-        this.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), this.materials[0] );
-        this.mesh.scale.set(
-            this.width * scale,
-            -this.height * scale,
+        self.timer = 0;
+        self.frameTime = options.frameTime;
+        self.currentFrame = 0;
+
+        self.mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1, 1 ), sample );
+        self.mesh.scale.set(
+            self.width * scale,
+            -self.height * scale,
             1
         );
     }
 
+    TQuad.prototype.currentAnimationData = function() {
+        return this.animations[this.currentAnimation];
+    }
+
+    // static method to generate list of file names.
     TQuad.enumerate = function( count, name ) {
         var assets = [];
         for(var i = 1; i <= count; i ++ ) {
@@ -41,17 +69,20 @@ var TQuad = (function() {
 
     TQuad.prototype.update = function( dt ) {
         this.timer += dt;
-        if( this.timer > this.frameTime ) {
+        var current = this.currentAnimationData();
+        var materials = current.materials;
+        if( this.timer > current.frameTime ) {
             this.timer = 0;
-            this.currentFrame ++;
-            this.currentFrame = this.currentFrame % this.materials.length;
-            this.mesh.material = this.materials[this.currentFrame];
+            this.currentFrame++;
+            this.currentFrame = this.currentFrame % materials.length;
+            this.mesh.material = materials[this.currentFrame];
         }
     }
 
     TQuad.prototype.setFrame = function( f ) {
+        this.timer = 0;
         this.currentFrame = f;
-        this.mesh.material = this.materials[this.currentFrame];
+        this.mesh.material = this.currentAnimationData().materials[this.currentFrame];
     }
 
     return TQuad;
