@@ -153,6 +153,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(4, 'missile/trail'))
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
+         .concat(mapAnimationAssets(5, 'particles/explode'))
     };
 
     function mapAnimationAssets( count, name ) {
@@ -190,7 +191,7 @@ var PlayState = (function() {
         this.particles = [];
 
         // random angle
-        for(var i = 0; i < 40; i++) {
+        for(var i = 0; i < 1; i++) {
             var ship = new Ship(game, {
                 distance: Math.random() * 150 + 250,
                 rotation: Math.random() * Math.PI * 2,
@@ -242,13 +243,41 @@ var PlayState = (function() {
         this.missiles.forEach(function(missile) {
             missile.update(game, dt);
             if(!missile.alive){
-
                 self.missiles.remove(missile);
+                self.particles.push(
+                    new Particle(game, {
+                        asset: 'particles/explode',
+                        frames: 5,
+                        planet: self.mars,
+                        life:500,
+                        position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
+                    })
+                );
+            }else{
+                ///*
+                if(missile.particleTimer > 150 ) {
+                    //console.log("creating particle");
+                    missile.particleTimer = 0;
+                    self.particles.push(
+                        new Particle(game, {
+                            asset: 'missile/trail',
+                            frames: 4,
+                            planet: self.mars,
+                            life:400,
+                            position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
+                        })
+                    );
+                    //console.log("particle added");
+                }
+                //*/
             }
         });
 
         this.particles.forEach(function(particle) {
             particle.update(game, dt);
+            if(!particle.alive){
+                self.particles.remove(particle);
+            }
         });
 
         this.player.update(game, dt);
