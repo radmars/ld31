@@ -6,6 +6,13 @@ var PlayState = (function() {
         t.minFilter = THREE.LinearMipMapLinearFilter;
     };
 
+    function rotate( v, r ) {
+        var m = new THREE.Matrix4().makeRotationZ(r);
+        var v = v.clone();
+        v.applyMatrix4(m);
+        return v;
+    }
+
     function Missile(game, ship, planet, rotation, position, offset) {
         this.quad = new TQuad(game, {
             animations: [
@@ -18,6 +25,8 @@ var PlayState = (function() {
         this.rotation = rotation.z;
         offset = rotate( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
+        this.alive = true;
+        this.trailCounter = 0;
         this.counter = 0;
         this.startPosition = { x: position.x, y: position.y };
         this.quad.mesh.rotation.z = rotation.z
@@ -28,29 +37,7 @@ var PlayState = (function() {
         this.planet = planet;
         this.planet.add(this.quad.mesh);
 
-        this.trails = new TQuad(game, {
-            animations: [
-                {
-                    frames: TQuad.enumerate( 4, 'missile/trail' ),
-                    frameTime: 100
-                },
-            ]
-        });
-        this.trails.mesh.rotation.z = rotation.z
-        this.trails.mesh.position.x = position.x + offset.x;
-        this.trails.mesh.position.y = position.y + offset.y;
-        this.trails.mesh.position.z = 4;
-        planet.add(this.trails.mesh);
-
         this.calculatePosition();
-
-    }
-
-    function rotate( v, r ) {
-        var m = new THREE.Matrix4().makeRotationZ(r);
-        var v = v.clone();
-        v.applyMatrix4(m);
-        return v;
     }
 
     // more trig,  or something.
@@ -59,21 +46,51 @@ var PlayState = (function() {
         n.z = 0;
         this.quad.mesh.position.y = this.startPosition.y * (1 - this.counter / 3000);
         this.quad.mesh.position.x = this.startPosition.x * (1 - this.counter / 3000);
-        this.trails.mesh.position.y = this.startPosition.y * (1.05 - this.counter / 3000 );
-        this.trails.mesh.position.x = this.startPosition.x * (1.05 - this.counter / 3000 );
     }
 
     Missile.prototype.update = function(game, dt) {
         this.counter += dt;
+        this.trailCounter += dt;
         if( this.counter < 3000 ) {
-            this.trails.update(dt);
             this.calculatePosition();
         }
         else {
-            this.planet.remove(this.quad.mesh);
-            this.planet.remove(this.trails.mesh);
-            this.ship.missile = null;
+            if(this.alive){
+                this.alive = false;
+                this.planet.remove(this.quad.mesh);
+            }
         }
+    };
+
+    function Particle(asset, frames, game, planet, rotation, position, offset) {
+        this.quad = new TQuad(game, {
+            animations: [
+                {
+                    frames: TQuad.enumerate( frames, asset ),
+                    frameTime: 100
+                },
+            ],
+        });
+
+
+        offset = offset || {x:0, y:0};
+        this.rotation = rotation.z;
+        offset = rotate( new THREE.Vector3( offset.x, offset.y ), this.rotation );
+
+        this.vel = new THREE.Vector3( 0, 0, 0);
+        this.life = 1000;
+
+        this.startPosition = { x: position.x, y: position.y };
+        this.quad.mesh.rotation.z = rotation.z;
+        this.quad.mesh.position.x = position.x + offset.x;
+        this.quad.mesh.position.y = position.y + offset.y;
+        this.quad.mesh.position.z = 4;
+        this.planet = planet;
+        this.planet.add(this.quad.mesh);
+    }
+
+    Particle.prototype.update = function(game, dt) {
+        this.life -= dt;
     };
 
 
@@ -138,6 +155,9 @@ var PlayState = (function() {
             }
         }[this.enemyId];
 
+        this.fireCounter = 0;
+        this.fireCounterMax = 2000 + Math.random() * 1000;
+
         this.quad = new TQuad(game, {
             animations: [
                 {
@@ -168,27 +188,26 @@ var PlayState = (function() {
     }
 
     Ship.prototype.update = function( dt, planet ) {
-        this.rotate( dt * this.speed * Math.PI / 1800);
-        if(this.missile) {
-            this.missile.update( game, dt );
-        }
-        if(!this.missile && !this.firing && Math.random() > .99) {
-            var self = this;
-            self.missile = new Missile( game, this, planet, this.quad.mesh.rotation, this.quad.mesh.position, this.mouthSpot);
-            self.quad.setFrame(1);
-            window.setTimeout(function() {
-                self.firing = false;
-                self.quad.setFrame(0);
-            }, 1000);
-            this.firing = true;
+        this.fireCounter += dt;
 
-        }
+        this.rotate( dt * this.speed * Math.PI / 1800);
+
+    }
+
+    Ship.prototype.fire = function(){
+        this.fireCounter = 0;
+        var self = this;
+        self.quad.setFrame(1);
+        window.setTimeout(function() {
+            self.firing = false;
+            self.quad.setFrame(0);
+        }, 1000);
+        this.firing = true;
     }
 
     Ship.prototype.addTo = function( container ) {
         container.add(this.quad.mesh)
     };
-
 
     function PlayState() {
         State.call(this);
@@ -265,6 +284,8 @@ var PlayState = (function() {
         this.mars = new Mars(game);
 
         this.ships = [];
+        this.missiles = [];
+        this.particles = [];
 
         // random angle
         for(var i = 0; i < 40; i++) {
@@ -298,15 +319,31 @@ var PlayState = (function() {
         }
 
         this.mars.rotate(rotation);
+        var self = this;
 
         this.ships.forEach(function(ship) {
             ship.update(dt, self.mars);
+
+            if(ship.fireCounter > ship.fireCounterMax){
+                ship.fire();
+                self.missiles.push( new Missile( game, ship, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
+            }
+        });
+
+        this.missiles.forEach(function(missile) {
+            missile.update(game, dt);
+            if(!missile.alive){
+
+                self.missiles.remove(missile);
+            }
+        });
+
+        this.particles.forEach(function(particle) {
+            particle.update(game, dt);
         });
 
         this.player.update(game, dt);
-
     }
-
 
     PlayState.prototype.resize = function(width, height) {
         this.cx = width / 2;
