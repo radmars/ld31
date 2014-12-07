@@ -191,11 +191,11 @@ var PlayState = (function() {
         this.particles = [];
 
         // random angle
-        for(var i = 0; i < 10; i++) {
+        for(var i = 0; i < 1; i++) {
             var ship = new Ship(game, {
-                distance: Math.random() * 150 + 250,
+                distance: 350,//Math.random() * 150 + 250,
                 rotation: Math.random() * Math.PI * 2,
-                speed: Math.random() - 0.5
+                speed: 0//Math.random() - 0.5
             });
             ship.addTo(this.mars);
             this.ships.push(ship);
@@ -242,6 +242,8 @@ var PlayState = (function() {
 
         this.missiles.forEach(function(missile) {
             missile.update(game, dt);
+
+
             if(!missile.alive){
                 self.missiles.remove(missile);
                 self.particles.push(
@@ -255,6 +257,16 @@ var PlayState = (function() {
                 );
             }else{
                 ///*
+                self.ships.forEach(function(ship) {
+                    var shipToMissile = ship.quad.mesh.position.clone();
+                    shipToMissile.sub(missile.quad.mesh.position);
+
+                    if(shipToMissile.length() < 32 && missile.collideCooldown <=0 ){
+                        console.log(shipToMissile.length());
+                        missile.life = 0;
+                    }
+                });
+
                 if(missile.particleTimer > 150 ) {
                     //console.log("creating particle");
                     missile.particleTimer = 0;
