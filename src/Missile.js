@@ -45,19 +45,6 @@ var Missile = (function() {
         this.particleTimer += dt;
         if( this.counter < 3000 ) {
             this.calculatePosition();
-
-            if(this.particleTimer > 1000 && Math.random() > .99) {
-                this.particleTimer = 0;
-                new Particle(game, {
-                    asset: 'missile/trail',
-                    frames: 4,
-                    planet: this.planet,
-                    position: { x: 0, y: 0, z: 5 },
-                    //rotation: this.quad.mesh.rotation,
-                    //position: this.quad.mesh.position,
-                    //offset: { y: -8, x: 0 },
-                });
-            }
         }
         else {
             if(this.alive){
