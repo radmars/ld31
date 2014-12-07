@@ -37,7 +37,6 @@ var Particle = (function() {
         this.planet = planet;
         this.planet.add(this.quad.mesh);
 
-
         //this.cb = this.update.bind(this);
         //game.state.controllers.push(this.cb);
     }
@@ -56,7 +55,6 @@ var Particle = (function() {
                 //console.log("removing!");
                 this.alive = false;
                 this.planet.remove(this.quad.mesh);
-
                 //game.state.controllers.remove(this.cb);
             }
         }

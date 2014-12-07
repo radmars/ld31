@@ -278,7 +278,6 @@ var PlayState = (function() {
         }
 
         var self = this;
-
         this.shipSpawn-=dt;
         if(this.shipSpawn<=0){
             this.shipSpawn = this.shipSpawnMax;
