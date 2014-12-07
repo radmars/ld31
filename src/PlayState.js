@@ -158,6 +158,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'robot/jump'))
          .concat(mapAnimationAssets(4, 'robot/walk'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
+
     };
 
     function mapAnimationAssets( count, name ) {
@@ -194,6 +195,7 @@ var PlayState = (function() {
         this.ships = [];
         this.missiles = [];
         this.particles = [];
+        this.blackholes = [];
 
         this.mans = [
             new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
@@ -226,7 +228,10 @@ var PlayState = (function() {
         var self = this;
         var rotation = 0;
         if( game.input.keys[87] ) {
-            this.blackhole = this.player.fire(game, this.mars);
+            var blackhole = this.player.fire(game, this.mars);
+            if( blackhole ) {
+                this.blackholes.push(blackhole);
+            }
         }
 
         //if(!this.player.firing) {
@@ -257,10 +262,19 @@ var PlayState = (function() {
         });
 
         // TODO Put this in missile.update
-        if(this.blackhole && ! this.blackhole.closed) {
-            this.missiles.forEach(function( m ) {
-                m.gravitize(self.blackhole, dt);
-            });
+        for(var i = 0; i < this.blackholes.length; i ++ ) {
+            var bh = this.blackholes[i];
+            bh.update(game, dt);
+            if(bh.closed) {
+                this.blackholes.remove(bh)
+            }
+        }
+
+        for(var i = 0; i < this.blackholes.length; i ++ ) {
+            var bh = this.blackholes[i];
+            for( var j = 0; j < this.missiles.length; j ++ ) {
+                this.missiles[j].gravitize(bh, dt);
+            }
         }
 
         this.missiles.forEach(function(missile) {
@@ -285,7 +299,6 @@ var PlayState = (function() {
                     shipToMissile.sub(missile.quad.mesh.position);
 
                     if(shipToMissile.length() < 32 && missile.collideCooldown <=0 ){
-                        console.log(shipToMissile.length());
                         missile.life = 0;
                     }
                 });

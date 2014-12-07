@@ -88,6 +88,7 @@ var Player = (function() {
             ],
         });
 
+        this.blackholeTimer = 0;
         this.quad.mesh.position.set(
             game.width / 2,
             game.height / 2 - 128,
@@ -103,13 +104,7 @@ var Player = (function() {
 
     Player.prototype.update = function(game, dt) {
         this.quad.update(dt);
-        if(this.blackhole) {
-            this.blackhole.update(game, dt);
-
-            if(this.blackhole.closed) {
-                this.blackhole = null;
-            }
-        }
+        this.blackholeTimer += dt;
     }
 
     Player.prototype.direction = function(right) {
@@ -122,7 +117,8 @@ var Player = (function() {
     }
 
     Player.prototype.fire = function(game, planet) {
-        if(!this.blackhole) {
+        if(this.blackholeTimer > 1000) {
+            this.blackholeTimer = 0;
             this.firing = true;
 
             var self = this;
@@ -131,9 +127,8 @@ var Player = (function() {
                 self.quad.setAnimation('idle');
             });
 
-            this.blackhole = new Blackhole(game, planet);
+            return new Blackhole(game, planet);
         }
-        return this.blackhole;
     }
 
     return Player;
