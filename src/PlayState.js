@@ -147,12 +147,12 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(2, 'enemies/1'))
          .concat(mapAnimationAssets(2, 'enemies/2'))
          .concat(mapAnimationAssets(2, 'enemies/3'))
-         .concat(mapAnimationAssets(1, 'tinyman/run'))
-         .concat(mapAnimationAssets(3, 'blackhole/open'))
+         .concat(mapAnimationAssets(2, 'tinyman/run'))
          .concat(mapAnimationAssets(3, 'blackhole/close'))
+         .concat(mapAnimationAssets(3, 'blackhole/open'))
+         .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(4, 'missile/trail'))
-         .concat(mapAnimationAssets(4, 'blackhole/idle'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
     };
 
@@ -182,6 +182,7 @@ var PlayState = (function() {
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
 
+
         this.player = new Player(game, {});
         this.player.addTo(this.scene2d);
         this.mars = new Mars(game);
@@ -189,6 +190,17 @@ var PlayState = (function() {
         this.ships = [];
         this.missiles = [];
         this.particles = [];
+
+        this.mans = [
+            new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
+            new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
+            new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
+            new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
+        ];
+
+        for(var i = 0; i < this.mans.length; i ++ ) {
+            this.mans[i].addTo(this.mars);
+        }
 
         // random angle
         for(var i = 0; i < 10; i++) {
@@ -213,11 +225,6 @@ var PlayState = (function() {
             this.blackhole = this.player.fire(game, this.mars);
         }
 
-        if(this.blackhole && ! this.blackhole.closed) {
-            this.missiles.forEach(function( m ) {
-                m.gravitize(self.blackhole, dt);
-            });
-        }
 
         if( game.input.keys[68] ) {
             rotation -= dt * Math.PI / 1600;
@@ -231,6 +238,10 @@ var PlayState = (function() {
         this.mars.rotate(rotation);
         var self = this;
 
+        for(var i = 0; i < this.mans.length; i++){
+            this.mans[i].update(game, dt);
+        }
+
         this.ships.forEach(function(ship) {
             ship.update(dt, self.mars);
 
@@ -239,6 +250,13 @@ var PlayState = (function() {
                 self.missiles.push( new Missile( game, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
             }
         });
+
+        // TODO Put this in missile.update
+        if(this.blackhole && ! this.blackhole.closed) {
+            this.missiles.forEach(function( m ) {
+                m.gravitize(self.blackhole, dt);
+            });
+        }
 
         this.missiles.forEach(function(missile) {
             missile.update(game, dt);

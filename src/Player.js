@@ -67,6 +67,13 @@ var Player = (function() {
                 },
             ],
         });
+
+        this.quad.mesh.position.set(
+            game.width / 2,
+            game.height / 2 - 128,
+            -1
+        );
+
     }
 
     Player.prototype.addTo = function(container){
@@ -75,13 +82,6 @@ var Player = (function() {
     }
 
     Player.prototype.update = function(game, dt) {
-        var self = this;
-        this.quad.mesh.position.set(
-            game.width / 2,
-            game.height / 2 - 128,
-            -1
-        );
-
         if(this.blackhole) {
             this.blackhole.update(game, dt);
 
