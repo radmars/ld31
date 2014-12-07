@@ -30,13 +30,9 @@ var Particle = (function() {
         this.quad.mesh.position.y = position.y + offset.y;
         this.quad.mesh.position.z = 4;
         this.planet = planet;
-        var self = this;
-
-        game.operations.push(function(){
-            self.planet.add(self.quad.mesh);
-            self.cb = self.update.bind(self);
-            game.state.controllers.push(self.cb);
-        });
+        this.planet.add(this.quad.mesh);
+        this.cb = this.update.bind(this);
+        game.state.controllers.push(this.cb);
     }
 
     Particle.prototype.update = function(game, dt) {
