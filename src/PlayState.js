@@ -285,14 +285,19 @@ var PlayState = (function() {
         }
 
         //if(!this.player.firing) {
+        var moving = false;
             if( game.input.keys[68] ) {
                 rotation -= dt * Math.PI / 1600;
+                var moving = true;
                 this.player.direction(false);
             }
             if( game.input.keys[65] ) {
                 rotation += dt * Math.PI / 1600;
+                moving = true;
                 this.player.direction(true);
             }
+            this.player.setWalking(moving);
+
         //}
         this.mars.rotate(rotation);
 
