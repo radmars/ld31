@@ -72,7 +72,9 @@ var PlayState = (function() {
         this.speed = options.speed
         if(options.speed > 0) {
             this.quad.mesh.scale.x *= -1;
+            this.mouthSpot.x *= -1;
         }
+
         this.orbitDistance = options.distance || 50;
         this.rotation = 0;
         this.rotate(options.rotation || 0);
