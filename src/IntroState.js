@@ -135,9 +135,10 @@ var IntroState = (function(){
             if( self.counter < 2000){
                 self.marsText.setFrame(0)
                 self.marsText.mesh.scale.set( 108, -28, 1 );
-                self.marsText.mesh.position.set(0, 140, 0);
+                self.marsText.mesh.position.set(1, 140, 0);
             } else if( self.counter < 2050) {
                 self.marsText.mesh.scale.set( 192, -28, 1 );
+                self.marsText.mesh.position.set(5, 140, 0);
                 self.marsText.setFrame(1)
             }
             else if( self.counter < 2600)
