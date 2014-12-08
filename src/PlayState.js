@@ -192,9 +192,16 @@ var PlayState = (function() {
     PlayState.prototype.onStart = function(game) {
         var self = this;
 
+        this.score = 0;
+
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
         this.camera2d.position.z = 10;
+        this.font = new TextRenderer.Font({
+            font: "monospace",
+            size: 32,
+            fgColor: 'white',
+        });
 
         game.renderer.setClearColor(0x2e2e2e, 1);
         game.renderer.autoClear = false;
@@ -204,6 +211,7 @@ var PlayState = (function() {
         this.mars = new Mars(game);
 
         this.shakeTime = 0;
+        this.scoreCounter = 0;
 
         this.ships = [];
         this.missiles = [];
@@ -255,6 +263,18 @@ var PlayState = (function() {
         );
     };
 
+    function addMissileTrailParticle( particles, mars, pos ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'missile/trail',
+                frames: 4,
+                planet: mars,
+                life:400,
+                position: pos
+            })
+        );
+    };
+
     function addTinyManParticle(particles, mars, pos, velX, velY){
         particles.push(
             new Particle(game, {
@@ -270,11 +290,33 @@ var PlayState = (function() {
         );
     };
 
+    PlayState.prototype.updateScore = function(dt) {
+        this.scoreCounter += dt;
+        if(this.scoreCounter > 1000) {
+            this.score += Math.floor(this.scoreCounter/1000);
+            this.scoreCounter = this.scoreCounter % 1000;
+        }
+        // attach properties like a jerk
+        if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != this.score ) ) {
+            if(this.scoreObject) {
+                this.scene2d.remove(this.scoreObject);
+            }
+            this.scoreObject = TextRenderer.render(this.font, "Score: " + this.score);
+            this.scoreObject.score = this.score;
+            this.scoreObject.position.x = 0; // this.cx*2;
+            this.scoreObject.position.y = 0; // this.cy*2;
+            this.scoreObject.position.z = 4;
+            this.scene2d.add(this.scoreObject);
+        }
+    }
+
+
     PlayState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
         var self = this;
         this.mars.atmosphere1.mesh.rotation.z -= dt/1000*0.05;
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
+        this.updateScore(dt);
 
         var self = this;
         var rotation = 0;
@@ -286,14 +328,19 @@ var PlayState = (function() {
         }
 
         //if(!this.player.firing) {
+        var moving = false;
             if( game.input.keys[68] ) {
                 rotation -= dt * Math.PI / 1600;
+                var moving = true;
                 this.player.direction(false);
             }
             if( game.input.keys[65] ) {
                 rotation += dt * Math.PI / 1600;
+                moving = true;
                 this.player.direction(true);
             }
+            this.player.setWalking(moving);
+
         //}
         this.mars.rotate(rotation);
 
@@ -451,14 +498,17 @@ var PlayState = (function() {
                 addExplodeParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 } );
             }
             else {
-                self.ships.forEach(function(ship) {
+
+                for(var i = 0; i < self.ships.length; i++ ) {
+                    var ship = self.ships[i];
                     var shipToMissile = ship.quad.mesh.position.clone();
                     shipToMissile.sub(missile.quad.mesh.position);
                     if(shipToMissile.length() < 32 && missile.collideCooldown <=0 ){
+                        self.score += 10;
                         missile.life = 0;
                         ship.die();
                     }
-                });
+                }
 
                 //collide with other missiles!!
                 self.missiles.forEach(function(missile2) {
@@ -474,17 +524,8 @@ var PlayState = (function() {
 
                 if(missile.particleTimer > 150 ) {
                     missile.particleTimer = 0;
-                    self.particles.push(
-                        new Particle(game, {
-                            asset: 'missile/trail',
-                            frames: 4,
-                            planet: self.mars,
-                            life:400,
-                            position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
-                        })
-                    );
+                    addMissileTrailParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 } );
                 }
-
             }
         });
 

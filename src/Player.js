@@ -80,6 +80,11 @@ var Player = (function() {
                     frameTime: 100
                 },
                 {
+                    name: 'walk',
+                    frames: TQuad.enumerate(4, "robot/walk"),
+                    frameTime: 66
+                },
+                {
                     name: 'shoot',
                     frames: TQuad.enumerate(20, "robot/shoot"),
                     frameTime: 33
@@ -107,6 +112,13 @@ var Player = (function() {
         this.blackholeTimer += dt;
     }
 
+    Player.prototype.setWalking = function(walking) {
+        if(this.walking != walking) {
+            this.walking = walking;
+            this.quad.setAnimation(walking ? 'walk' : 'idle');
+        }
+    }
+
     Player.prototype.direction = function(right) {
         if( right ) {
             this.quad.mesh.scale.x = -Math.abs(this.quad.mesh.scale.x);
@@ -124,7 +136,7 @@ var Player = (function() {
             var self = this;
             this.quad.setAnimation( 'shoot', function() {
                 self.firing = false;
-                self.quad.setAnimation('idle');
+                self.quad.setAnimation(self.walking ? 'walk' : 'idle');
             });
 
             return new Blackhole(game, planet);

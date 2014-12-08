@@ -13,8 +13,8 @@ var Loader = (function() {
                 }
                 return self.assets[name] = image;
             };
-            var error = function(error) {
-                return console.error(error);
+            var error = function() {
+                return console.error( "Error loading", name, error);
             };
             return THREE.ImageUtils.loadTexture(name, undefined, success, error);
         };
