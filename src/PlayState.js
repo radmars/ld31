@@ -11,16 +11,22 @@ var PlayState = (function() {
         this.planet      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
         this.atmosphere1 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere1.png']}]});
         this.atmosphere2 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere2.png']}]});
+        this.glasses	 = new TQuad(game, {animations: [{frames: ['assets/intro/glasses1.png']}]});
 
         this.bgSprite.mesh.position.z    = -1;
         this.atmosphere1.mesh.position.z = 2;
         this.atmosphere2.mesh.position.z = 2;
+        this.glasses.mesh.position.z = 3;
+        this.glasses.mesh.position.y = -1;
+
 
         this.worldObject = new THREE.Object3D();
         this.add(this.bgSprite.mesh);
         this.add(this.atmosphere1.mesh);
         this.add(this.planet.mesh);
         this.add(this.atmosphere2.mesh);
+        this.add(this.glasses.mesh);
+
         this.worldObject.position.set( game.width / 2, game.height / 2, 0 );
         this.rotation = 0;
     }
@@ -146,6 +152,11 @@ var PlayState = (function() {
             },
             {
                 name: 'assets/textures/bg/mars_atmosphere2.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/intro/glasses1.png',
                 type: 'img',
                 callback: pixelize,
             },
