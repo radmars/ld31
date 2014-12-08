@@ -224,6 +224,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'robot/jump'))
          .concat(mapAnimationAssets(4, 'robot/walk'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
+         .concat(mapAnimationAssets(10, 'particles/bigExplode'))
          .concat(mapAnimationAssets(2, 'escapePod'))
          .concat(mapAnimationAssets(5, 'warp'))
          .concat(mapAnimationAssets(1, 'particles/planetChunks/1'))
@@ -356,6 +357,19 @@ var PlayState = (function() {
                 planet: mars,
                 life:500,
                 position: pos
+            })
+        );
+    };
+
+    function addBigExplodeParticle( particles, mars, pos ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'particles/bigExplode',
+                frames: 10,
+                planet: mars,
+                life:1000,
+                position: pos,
+                rotation:Math.random()*Math.PI*2
             })
         );
     };
@@ -544,7 +558,11 @@ var PlayState = (function() {
                 game.loader.get("audio/missile-explode").pos3d(pan, 0.0, 0.0).play();
                 var x = x1*200-100;
                 var y = Math.random()*200-100;
-                addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                if(Math.random() < 0.5){
+                    addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                }else{
+                    addBigExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                }
                 addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 4 );
             }
 
@@ -561,7 +579,11 @@ var PlayState = (function() {
                     var x = Math.random()*200-100;
                     var y = Math.random()*200-100;
                     addShipDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 3 );
-                    addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                    if(Math.random() < 0.5){
+                        addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                    }else{
+                        addBigExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                    }
                 }
 
                 this.mans.forEach(function(man) {
@@ -573,7 +595,7 @@ var PlayState = (function() {
 
                 this.escapePods.forEach(function(pod) {
                     addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
-                    addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
+                    addBigExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
                     for(var i=0; i<pod.men; i++){
                         addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
                     }
@@ -669,7 +691,7 @@ var PlayState = (function() {
                     game.loader.get("audio/pod-explode").play();
                     game.loader.get("audio/death").play();
                     addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
-                    addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
+                    addBigExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
                     for(var i=0; i<pod.men; i++){
                         addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
                     }
@@ -677,6 +699,8 @@ var PlayState = (function() {
                 }
                 else {
                     self.menSaved += pod.men;
+                    addWarpParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation + Math.PI*0.5 );
+                    game.loader.get("audio/warpin").play();
                 }
             }
         });
@@ -713,10 +737,11 @@ var PlayState = (function() {
                rot += Math.PI*0.5;
             }
             addWarpParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, rot );
+            game.loader.get("audio/warpin").play();
             ship.addTo(this.mars);
             this.ships.push(ship);
 
-            game.loader.get("audio/warpin").play();
+
         }
 
         if(this.mans.length < 5&& !this.dieing){
@@ -743,7 +768,7 @@ var PlayState = (function() {
 
             if(!ship.alive){
                 self.ships.remove(ship);
-                addExplodeParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 } );
+                addBigExplodeParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 } );
                 addShipDebris(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, 3 );
             }
         });
