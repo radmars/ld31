@@ -8,7 +8,16 @@ var PlayState = (function() {
 
     function Mars(game) {
         this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
-        this.planet      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
+        this.planet1      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
+        this.planet2      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars2.png']}]});
+        this.planet3      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars3.png']}]});
+        this.planet4      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars4.png']}]});
+        this.planet5      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars5.png']}]});
+
+        this.planet = this.planet1;
+
+        this.currentPlanetAsset = 0;
+
         this.atmosphere1 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere1.png']}]});
         this.atmosphere2 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere2.png']}]});
         this.glasses	 = new TQuad(game, {animations: [{frames: ['assets/intro/glasses1.png']}]});
@@ -142,6 +151,26 @@ var PlayState = (function() {
             },
             {
                 name: 'assets/textures/bg/mars.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars2.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars3.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars4.png',
+                type: 'img',
+                callback: pixelize,
+            },
+            {
+                name: 'assets/textures/bg/mars5.png',
                 type: 'img',
                 callback: pixelize,
             },
@@ -431,6 +460,39 @@ var PlayState = (function() {
             this.shakeTime = 2000;
             this.player.hit(4000);
             //this.goToScoreScreen();
+        }
+
+        var currPlanetImage =  5-Math.round(this.hp*0.5);
+        if(this.mars.currentPlanetAsset != currPlanetImage){
+            console.log("CHANGING PLANET IMAGE: " + currPlanetImage);
+            this.mars.currentPlanetAsset = currPlanetImage;
+            this.mars.remove(this.mars.planet.mesh);
+            switch(currPlanetImage){
+                case 0:
+                    this.mars.planet = this.mars.planet1;
+                    break;
+                case 1:
+                    this.mars.planet = this.mars.planet2;
+                    break;
+                case 2:
+                    this.mars.planet = this.mars.planet3;
+                    break;
+                case 3:
+                    this.mars.planet = this.mars.planet4;
+                    break;
+                case 4:
+                    this.mars.planet = this.mars.planet5;
+                    break;
+            }
+            this.mars.add(this.mars.planet.mesh);
+
+            for(var i=0; i<10; i++){
+                var x = Math.random()*200-100;
+                var y = Math.random()*200-100;
+                addShipDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 1 );
+                addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 3 );
+                addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+            }
         }
 
         var self = this;
