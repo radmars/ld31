@@ -481,7 +481,7 @@ var PlayState = (function() {
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
         this.updateScore(dt);
 
-        if( game.input.keys[78] || this.hp <= 0  ) {
+        if( this.hp <= 0  ) {
             if (!this.dieing) {
                 this.player.hit(4000);
             }
@@ -578,7 +578,7 @@ var PlayState = (function() {
         }
 
         if(this.player.hitTimer<= 0){
-            if( game.input.keys[87] ) {
+            if( isUp(game) ) {
                 var blackhole = this.player.fire(game, this.mars);
                 if( blackhole ) {
                     this.blackholes.push(blackhole);
@@ -587,12 +587,12 @@ var PlayState = (function() {
             }
 
             var moving = false;
-            if( game.input.keys[68] ) {
+            if( isRight(game) ) {
                 rotation -= dt * Math.PI / 1600;
                 var moving = true;
                 this.player.direction(false);
             }
-            if( game.input.keys[65] ) {
+            if( isLeft(game)) {
                 rotation += dt * Math.PI / 1600;
                 moving = true;
                 this.player.direction(true);
