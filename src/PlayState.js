@@ -625,7 +625,7 @@ var PlayState = (function() {
                 var dist = man.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
 
-                if(dist.length() < 64 ){
+                if(dist.length() < 24 ){
                     game.loader.get("audio/pickup").play();
                     man.die();
                     pod.men++;
@@ -703,7 +703,7 @@ var PlayState = (function() {
             var rot = Math.random() * Math.PI * 2;
             var speed = Math.random()*0.5 - 0.25
             var ship = new Ship(game, {
-                distance: Math.random() * 50 + 300,
+                distance: Math.random() * 50 + 350,
                 rotation: rot,
                 speed:speed
             });
