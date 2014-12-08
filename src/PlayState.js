@@ -8,13 +8,19 @@ var PlayState = (function() {
 
     function Mars(game) {
         this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
-        this.planet1      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
-        this.planet2      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars2.png']}]});
-        this.planet3      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars3.png']}]});
-        this.planet4      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars4.png']}]});
-        this.planet5      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars5.png']}]});
-
-        this.planet = this.planet1;
+        this.planet      = new TQuad(game, {
+            animations: [
+                {
+                    frames: [
+                        'assets/textures/bg/mars.png',
+                        'assets/textures/bg/mars2.png',
+                        'assets/textures/bg/mars3.png',
+                        'assets/textures/bg/mars4.png',
+                        'assets/textures/bg/mars5.png',
+                    ]
+                }
+            ]
+        });
 
         this.currentPlanetAsset = 0;
 
@@ -497,25 +503,7 @@ var PlayState = (function() {
             var currPlanetImage =  5-Math.round(this.hp*0.5);
             if(this.mars.currentPlanetAsset != currPlanetImage){
                 this.mars.currentPlanetAsset = currPlanetImage;
-                this.mars.remove(this.mars.planet.mesh);
-                switch(currPlanetImage){
-                    case 0:
-                        this.mars.planet = this.mars.planet1;
-                        break;
-                    case 1:
-                        this.mars.planet = this.mars.planet2;
-                        break;
-                    case 2:
-                        this.mars.planet = this.mars.planet3;
-                        break;
-                    case 3:
-                        this.mars.planet = this.mars.planet4;
-                        break;
-                    case 4:
-                        this.mars.planet = this.mars.planet5;
-                        break;
-                }
-                this.mars.add(this.mars.planet.mesh);
+                this.mars.planet.setFrame(currPlanetImage);
 
                 for(var i=0; i<10; i++){
                     var x = Math.random()*200-100;
