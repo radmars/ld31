@@ -251,6 +251,8 @@ var PlayState = (function() {
          .concat(mapSoundAsset("stun"))
          .concat(mapSoundAsset("warpin"))
          .concat(mapSoundAsset("pickup"))
+         .concat(mapSoundAsset("planet-explode-1"))
+         .concat(mapSoundAsset("planet-explode-2"))
 
          this.shipsDestroyed = 0;
          this.menSaved = 0;
@@ -537,7 +539,10 @@ var PlayState = (function() {
             if(this.dieExplodeTimer <= 0 && this.dieTimer > 2000){
 
                 this.dieExplodeTimer = 100;
-                var x = Math.random()*200-100;
+                var x1 = Math.random();
+                var pan = x1*2.0-1.0;
+                game.loader.get("audio/missile-explode").pos3d(pan, 0.0, 0.0).play();
+                var x = x1*200-100;
                 var y = Math.random()*200-100;
                 addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
                 addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 4 );
@@ -549,6 +554,8 @@ var PlayState = (function() {
                 this.mars.remove(this.mars.atmosphere2.mesh);
                 this.mars.remove(this.mars.planet.mesh);
                 this.scene2d.remove(this.player.quad.mesh);
+
+                game.loader.get("audio/planet-explode-2").play();
 
                 for(var i=0; i<10; i++){
                     var x = Math.random()*200-100;
