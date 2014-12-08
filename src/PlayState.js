@@ -169,6 +169,21 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'robot/jump'))
          .concat(mapAnimationAssets(4, 'robot/walk'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
+         .concat(mapAnimationAssets(2, 'escapePod'))
+         .concat(mapAnimationAssets(5, 'warp'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/1'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/2'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/3'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/4'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/5'))
+
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris1'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris2'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris3'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris4'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris5'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
     };
 
@@ -216,7 +231,9 @@ var PlayState = (function() {
         this.missiles = [];
         this.particles = [];
         this.blackholes = [];
+        this.escapePods = [];
 
+        this.escapePodSpawn = this.escapePodSpawnMax = 2000;
         this.shipSpawn = 1000;
         this.shipSpawnMax = 10000;
 
@@ -246,6 +263,94 @@ var PlayState = (function() {
         }
         */
         this.mars.addTo(this.scene2d);
+    };
+
+    function addExplodeParticle( particles, mars, pos ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'particles/explode',
+                frames: 5,
+                planet: mars,
+                life:500,
+                position: pos
+            })
+        );
+    };
+
+    function addWarpParticle( particles, mars, pos, rotation ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'warp',
+                frames: 5,
+                planet: mars,
+                life:500,
+                position: pos,
+                rotation: rotation
+            })
+        );
+    };
+
+    function addMissileTrailParticle( particles, mars, pos, rotation, offset ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'missile/trail',
+                frames: 4,
+                planet: mars,
+                life:400,
+                position: pos,
+                offset:offset,
+                rotation: rotation
+            })
+        );
+    };
+
+    function addTinyManParticle(particles, mars, pos, velX, velY){
+        particles.push(
+            new Particle(game, {
+                asset: 'tinyman/die',
+                frames: 2,
+                planet: mars,
+                life:5000,
+                velX:velX,
+                velY:velY,
+                rotateSpeed:4.0,
+                position: pos
+            })
+        );
+    };
+
+    function addPlanetDebris(particles, mars, pos, num){
+        for(var i=0; i<num; i++){
+            particles.push(
+                new Particle(game, {
+                    asset: 'particles/planetChunks/' + (Math.round(Math.random()*4+1)),
+                    frames: 1,
+                    planet: mars,
+                    life:1500,
+                    velX:Math.random()*200-100,
+                    velY:Math.random()*200-100,
+                    rotateSpeed:4.0,
+                    position: pos
+                })
+            );
+        }
+    };
+
+    function addShipDebris(particles, mars, pos, num){
+        for(var i=0; i<num; i++){
+            particles.push(
+                new Particle(game, {
+                    asset: 'particles/debris/shipDebris' + (Math.round(Math.random()*6+1)),
+                    frames: 1,
+                    planet: mars,
+                    life:2000,
+                    velX:Math.random()*200-100,
+                    velY:Math.random()*200-100,
+                    rotateSpeed:4.0,
+                    position: pos
+                })
+            );
+        }
     };
 
     PlayState.prototype.updateScore = function(dt) {
@@ -281,10 +386,9 @@ var PlayState = (function() {
         });
     }
 
-
     PlayState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
-
+        var self = this;
         this.mars.atmosphere1.mesh.rotation.z -= dt/1000*0.05;
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
         this.updateScore(dt);
@@ -319,6 +423,67 @@ var PlayState = (function() {
         //}
         this.mars.rotate(rotation);
 
+        this.escapePodSpawn-=dt;
+        if(this.escapePodSpawn < 0){
+            var pod = new EscapePod( game, this.mars, this.mars.planet.mesh.rotation, new THREE.Vector3(), new THREE.Vector3(0,125,0))
+            this.escapePodSpawn = this.escapePodSpawnMax + pod.waitOnPlanet;
+            this.escapePods.push( pod );
+        }
+
+        this.escapePods.forEach(function(pod) {
+
+            var killed = false;
+            self.mans.forEach(function(man) {
+                var dist = man.quad.mesh.position.clone();
+                dist.sub(pod.quad.mesh.position);
+                if(dist.length() < 32 ){
+                    man.die();
+                    pod.men++;
+                }
+            });
+
+            self.ships.forEach(function(ship) {
+                var dist = ship.quad.mesh.position.clone();
+                dist.sub(pod.quad.mesh.position);
+                if( dist.length() < 64  ){
+                    ship.life = 0;
+                    ship.die();
+                    pod.life = 0;
+                    killed = true;
+                }
+            });
+
+            self.missiles.forEach(function(missile) {
+                var dist = missile.quad.mesh.position.clone();
+                dist.sub(pod.quad.mesh.position);
+                if( dist.length() < 64  ){
+                    missile.life = 0;
+                    pod.life = 0;
+                    killed = true;
+                }
+            });
+
+            pod.update(game, dt);
+
+            if(pod.particleTimer > 150 && pod.waitOnPlanet <= 0) {
+                pod.particleTimer = 0;
+                addMissileTrailParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation, {x:-5,y:40} );
+                addMissileTrailParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation, {x:5,y:40} );
+            }
+
+            if(! pod.alive){
+                self.escapePods.remove(pod);
+                if(killed){
+                    self.shakeTime = 500;
+                    addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
+                    addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
+                    for(var i=0; i<pod.men; i++){
+                        addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
+                    }
+                }
+            }
+        });
+
         if(this.shakeTime >0){
             this.shakeTime-=dt;
             var dist = (this.shakeTime/1000) * 10;
@@ -329,17 +494,25 @@ var PlayState = (function() {
             this.camera2d.position.y = 0;
         }
 
-        var self = this;
 
         this.shipSpawn-=dt;
         if(this.shipSpawn<=0){
             this.shipSpawn = this.shipSpawnMax;
 
+            var rot = Math.random() * Math.PI * 2;
+            var speed = Math.random()*0.5 - 0.25
             var ship = new Ship(game, {
                 distance: Math.random() * 50 + 300,
-                rotation: Math.random() * Math.PI * 2,
-                speed: Math.random()*0.5 - 0.25
+                rotation: rot,
+                speed:speed
             });
+
+            if(speed > 0){
+               rot -= Math.PI*0.5;
+            }else{
+               rot += Math.PI*0.5;
+            }
+            addWarpParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, rot );
             ship.addTo(this.mars);
             this.ships.push(ship);
         }
@@ -368,15 +541,8 @@ var PlayState = (function() {
 
             if(!ship.alive){
                 self.ships.remove(ship);
-                self.particles.push(
-                    new Particle(game, {
-                        asset: 'particles/explode',
-                        frames: 5,
-                        planet: self.mars,
-                        life:500,
-                        position: { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }
-                    })
-                );
+                addExplodeParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 } );
+                addShipDebris(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, 3 );
             }
         });
 
@@ -394,6 +560,9 @@ var PlayState = (function() {
             for( var j = 0; j < this.missiles.length; j ++ ) {
                 this.missiles[j].gravitize(bh, dt);
             }
+            for( var k = 0; k < this.escapePods.length; k ++ ) {
+                this.escapePods[k].gravitize(bh, dt);
+            }
         }
 
         this.missiles.forEach(function(missile) {
@@ -403,6 +572,7 @@ var PlayState = (function() {
                 missile.life = 0;
                 self.shakeTime = 500;
                 //did it hit a man?
+                addPlanetDebris(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, 4 );
 
                 self.mans.forEach(function(man) {
                     var missileToMan = man.quad.mesh.position.clone();
@@ -411,18 +581,8 @@ var PlayState = (function() {
 
                         missileToMan.setLength(100 + Math.random()*50);
 
-                        self.particles.push(
-                            new Particle(game, {
-                                asset: 'tinyman/die',
-                                frames: 2,
-                                planet: self.mars,
-                                life:5000,
-                                velX:missileToMan.x,
-                                velY:missileToMan.y,
-                                rotateSpeed:4.0,
-                                position: { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }
-                            })
-                        );
+                        addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, missileToMan.x, missileToMan.y );
+
                         man.die();
                         //TODO: spawn blood / man particle!
                     }
@@ -433,15 +593,7 @@ var PlayState = (function() {
 
             if(!missile.alive){
                 self.missiles.remove(missile);
-                self.particles.push(
-                    new Particle(game, {
-                        asset: 'particles/explode',
-                        frames: 5,
-                        planet: self.mars,
-                        life:500,
-                        position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
-                    })
-                );
+                addExplodeParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 } );
             }
             else {
 
@@ -470,17 +622,8 @@ var PlayState = (function() {
 
                 if(missile.particleTimer > 150 ) {
                     missile.particleTimer = 0;
-                    self.particles.push(
-                        new Particle(game, {
-                            asset: 'missile/trail',
-                            frames: 4,
-                            planet: self.mars,
-                            life:400,
-                            position: { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }
-                        })
-                    );
+                    addMissileTrailParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, missile.rotation, {x:0,y:-10} );
                 }
-
             }
         });
 
