@@ -187,13 +187,13 @@ var PlayState = (function() {
         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
-        .concat(mapSoundAsset("ld31"))
-        .concat(mapSoundAsset("blackhole", 0.4))
-        .concat(mapSoundAsset("death", 0.36))
+        .concat(mapSoundAsset("ld31", 0.7))
+        .concat(mapSoundAsset("blackhole", 0.75))
+        .concat(mapSoundAsset("death"))
         .concat(mapSoundAsset("missile-explode"))
         .concat(mapSoundAsset("missile-fire"))
         .concat(mapSoundAsset("pod-explode"))
-        .concat(mapSoundAsset("pod-launch", 0.75))
+        .concat(mapSoundAsset("pod-launch", 0.9))
         .concat(mapSoundAsset("ship-explode"))
         .concat(mapSoundAsset("stun"))
         .concat(mapSoundAsset("warpin"))
@@ -282,6 +282,8 @@ var PlayState = (function() {
         }
         */
         this.mars.addTo(this.scene2d);
+
+        game.loader.get("audio/ld31").loop(true).play();
     };
 
     function addExplodeParticle( particles, mars, pos ) {
