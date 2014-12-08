@@ -1,21 +1,33 @@
 var IntroState = (function(){
     "use strict";
+    
+	var pixelize = function(t) {
+        t.magFilter = THREE.NearestFilter;
+        t.minFilter = THREE.LinearMipMapLinearFilter;
+    };
+    
     function IntroState( nextState ) {
         State.call(this);
         this.glassesFiles = [
-            { name: 'assets/intro/glasses1.png', type: 'img' },
-            { name: 'assets/intro/glasses2.png', type: 'img' },
-            { name: 'assets/intro/glasses3.png', type: 'img' },
-            { name: 'assets/intro/glasses4.png', type: 'img' }
+            { name: 'assets/intro/glasses1.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/glasses2.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/glasses3.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/glasses4.png', type: 'img', callback: pixelize }
         ];
 
         this.textFiles = [
-            { name: 'assets/intro/intro_mars.png', type: 'img' },
-            { name: 'assets/intro/intro_radmars1.png', type: 'img' },
-            { name: 'assets/intro/intro_radmars2.png', type: 'img' }
+            { name: 'assets/intro/intro_mars.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/intro_radmars1.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/intro_radmars2.png', type: 'img', callback: pixelize }
         ];
 
         this.bgAssetName = "assets/intro/intro_bg.png";
+		
+		this.marsFiles = [
+            { name: 'assets/intro/mars1.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/mars2.png', type: 'img', callback: pixelize },
+            { name: 'assets/intro/mars3.png', type: 'img', callback: pixelize },
+        ];
 
         this.nextState = nextState;
 
@@ -30,6 +42,7 @@ var IntroState = (function(){
             this.nextState.getAssets(),
             this.glassesFiles,
             this.textFiles,
+            this.marsFiles,
             { name: this.bgAssetName, type: 'img' }
         );
     }
@@ -64,9 +77,10 @@ var IntroState = (function(){
         game.renderer.autoClear = false;
 
         this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
-        this.planet      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
+        this.planet      = new TQuad(game, {animations: [{frames: ['assets/intro/mars1.png', 'assets/intro/mars2.png', 'assets/intro/mars3.png', 'assets/textures/bg/mars.png' ]}]});
         this.atmosphere1 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere1.png']}]});
         this.atmosphere2 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere2.png']}]});
+        this.marsText    = new TQuad(game, {animations: [{frames: ['assets/intro/intro_mars.png', 'assets/intro/intro_radmars1.png', 'assets/intro/intro_radmars2.png' ]}]});
 
         this.bgSprite.mesh.position.z    = -1;
         this.atmosphere1.mesh.position.z = 2;
@@ -75,8 +89,9 @@ var IntroState = (function(){
         this.worldObject = new THREE.Object3D();
         this.worldObject.add(this.bgSprite.mesh);
         this.worldObject.add(this.atmosphere1.mesh);
-        this.worldObject.add(this.planet.mesh);
         this.worldObject.add(this.atmosphere2.mesh);
+        this.worldObject.add(this.planet.mesh);
+        this.worldObject.add(this.marsText.mesh);
         this.worldObject.position.set( game.width / 2, game.height / 2, 0 );
         this.scene2d.add(this.worldObject);
 
@@ -85,7 +100,7 @@ var IntroState = (function(){
                 map: game.loader.get( file.name ),
             });
         });
-
+       
         this.glasses = new TQuad(game, {
             animations: [
                 {
@@ -111,35 +126,36 @@ var IntroState = (function(){
             map: game.loader.get( this.bgAssetName ),
         });
 
-        this.scene2d.add(this.textSprite);
+        //this.scene2d.add(this.textSprite);
         this.scene2d.add(this.glasses.mesh);
 
         this.controllers.push(function( game, dt ) {
             self.counter += dt;
 
-            if( self.counter < 2000)
-                self.textSprite.material = self.textMaterials[ 0 ];
-            else if( self.counter < 2050) {
-                self.textSprite.scale.set( 192, -28, 1 );
-                self.textSprite.material = self.textMaterials[ 1 ];
+            if( self.counter < 2000){
+                self.marsText.setFrame(0)
+                self.marsText.mesh.position.set(0, 160, 0);
+            } else if( self.counter < 2050) {
+                self.marsText.mesh.scale.set( 384, -56, 1 );
+                self.marsText.setFrame(1)
             }
             else if( self.counter < 2600)
-                self.textSprite.material = self.textMaterials[ 2 ];
+                self.marsText.setFrame(2)
             else if( self.counter < 2650)
-                self.textSprite.material = self.textMaterials[ 1 ];
+                self.marsText.setFrame(1)
             else if( self.counter < 2700)
-                self.textSprite.material = self.textMaterials[ 2 ];
+                self.marsText.setFrame(2)
             else if( self.counter < 2750)
-                self.textSprite.material = self.textMaterials[ 1 ];
+                self.marsText.setFrame(1)
             else if( self.counter < 2800)
-                self.textSprite.material = self.textMaterials[ 2 ];
+                self.marsText.setFrame(2)
             else if( self.counter < 2850)
-                self.textSprite.material = self.textMaterials[ 1 ];
+                self.marsText.setFrame(1)
             else
-                self.textSprite.material = self.textMaterials[ 2 ];
+                self.marsText.setFrame(2)
 
             if( self.counter < 2000)
-                self.glasses.mesh.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
+                self.glasses.mesh.position.y = ( self.cy ) * (self.counter/2000.0) - 10;
             else if( self.counter < 2150 )
                 self.glasses.setFrame(1);
             else if( self.counter < 2300 )
@@ -155,8 +171,22 @@ var IntroState = (function(){
                 self.cx,
                 self.cy - 28 / 2 + 80, 0
             );
-
-            if(self.counter > 5000){
+			
+			if( self.counter < 4600 ) {
+				self.planet.setFrame(0);
+				self.atmosphere1.setFrame(1);
+				self.atmosphere2.setFrame(1);
+			} else if ( self.counter < 5000 ) {
+				self.planet.setFrame(1);
+			} else if ( self.counter < 5400 ) {
+				self.atmosphere1.setFrame(0);
+				self.planet.setFrame(2);
+			} else {
+				self.atmosphere2.setFrame(0);
+				self.planet.setFrame(3);
+			}
+								
+            if(self.counter > 6400){
                 game.operations.push(function() {
                     game.setState( self.nextState );
                 });
