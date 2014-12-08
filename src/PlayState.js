@@ -327,20 +327,6 @@ var PlayState = (function() {
             this.mans[i].addTo(this.mars);
         }
 
-        // random angle
-
-        //ships spawn in update!
-        /*
-        for(var i = 0; i < 0; i++) {
-            var ship = new Ship(game, {
-                distance: 350,//Math.random() * 150 + 250,
-                rotation: Math.random() * Math.PI * 2,
-                speed: Math.random() - 0.5
-            });
-            ship.addTo(this.mars);
-            this.ships.push(ship);
-        }
-        */
         this.mars.addTo(this.scene2d);
 
         if (!game.songStarted) {
@@ -506,12 +492,10 @@ var PlayState = (function() {
             }
             this.dieing = true;
             this.shakeTime = 2000;
-            //this.goToScoreScreen();
         }
         if(!this.dieing){
             var currPlanetImage =  5-Math.round(this.hp*0.5);
             if(this.mars.currentPlanetAsset != currPlanetImage){
-                console.log("CHANGING PLANET IMAGE: " + currPlanetImage);
                 this.mars.currentPlanetAsset = currPlanetImage;
                 this.mars.remove(this.mars.planet.mesh);
                 switch(currPlanetImage){
@@ -636,7 +620,12 @@ var PlayState = (function() {
 
         this.escapePodSpawn-=dt;
         if(this.escapePodSpawn < 0 && !this.dieing){
-            var pod = new EscapePod( game, this.mars, this.mars.planet.mesh.rotation, new THREE.Vector3(), new THREE.Vector3(0,125,0))
+            var pod = new EscapePod(
+                game,
+                this.mars,
+                this.mars.planet.mesh.rotation,
+                new THREE.Vector3(0,125,0)
+            );
             this.escapePodSpawn = this.escapePodSpawnMax + pod.waitOnPlanet;
             this.escapePods.push( pod );
         }
