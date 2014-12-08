@@ -14,6 +14,7 @@ var GameOverState = (function() {
         this.menSaved = scores.menSaved;
         this.menLost = scores.menLost;
         this.timeAlive = scores.timeAlive;
+        this.totalScore = scores.totalScore;
 
     };
 
@@ -42,6 +43,8 @@ var GameOverState = (function() {
             "Brave souls saved: " + this.menSaved,
             "Brave souls destroyed: " + this.menLost,
             "Duration of apocalypse: " + this.timeAlive,
+            "Total: " + this.totalScore,
+
         ].forEach(function(measure,i ) {
             var scoreObject = TextRenderer.render(self.font, measure);
             scoreObject.position.x = 0;

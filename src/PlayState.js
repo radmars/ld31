@@ -380,6 +380,7 @@ var PlayState = (function() {
             menSaved:345,
             menLost: 586,
             timeAlive: 123,
+            totalScore: this.score,
         };
         game.operations.push(function() {
             game.setState( new GameOverState(scores) );
