@@ -73,6 +73,7 @@ var GameOverState = (function() {
     };
 
     GameOverState.prototype.onStop = function(game) {
+        game.loader.get("audio/ld31").stop();
         game.renderer.autoClear = true;
     };
 
