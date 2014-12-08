@@ -45,7 +45,8 @@ var IntroState = (function(){
             this.marsFiles,
             { name: this.bgAssetName, type: 'img' }
 
-        ).concat(mapSoundAsset("radmarslogo"));
+        ).concat(mapSoundAsset("radmarslogo"))
+        .concat(mapSoundAsset("thunk", 0.5));
     }
 
     IntroState.prototype.onBeat = function() {
@@ -182,12 +183,24 @@ var IntroState = (function(){
 				self.atmosphere2.setFrame(1);
 			} else if ( self.counter < 5000 ) {
 				self.planet.setFrame(1);
+                if (!self.thunk1) {
+                    game.loader.get("audio/thunk").play();
+                    self.thunk1 = true;
+                }
 			} else if ( self.counter < 5400 ) {
 				self.atmosphere1.setFrame(0);
 				self.planet.setFrame(2);
+                if (!self.thunk2) {
+                    game.loader.get("audio/thunk").play();
+                    self.thunk2 = true;
+                }
 			} else {
 				self.atmosphere2.setFrame(0);
 				self.planet.setFrame(3);
+                if (!self.thunk3) {
+                    game.loader.get("audio/thunk").play();
+                    self.thunk3 = true;
+                }
 			}
 								
             if(self.counter > 6400){
