@@ -311,7 +311,10 @@ var PlayState = (function() {
         */
         this.mars.addTo(this.scene2d);
 
-        game.loader.get("audio/ld31").loop(true).play();
+        if (!game.songStarted) {
+            game.loader.get("audio/ld31").loop(true).play();
+            game.songStarted = true;
+        }
     };
 
     function addExplodeParticle( particles, mars, pos ) {

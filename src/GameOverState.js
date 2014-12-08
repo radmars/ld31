@@ -58,7 +58,7 @@ var GameOverState = (function() {
         State.prototype.update.call(this, game, dt);
         if( game.input.keys[77] ) {
             game.operations.push(function() {
-                game.setState( new IntroState( new PlayState() ));
+                game.setState( new PlayState() );
             });
         }
 
@@ -73,7 +73,6 @@ var GameOverState = (function() {
     };
 
     GameOverState.prototype.onStop = function(game) {
-        game.loader.get("audio/ld31").stop();
         game.renderer.autoClear = true;
     };
 
