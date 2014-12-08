@@ -56,7 +56,7 @@ var GameOverState = (function() {
 
     GameOverState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
-        if( game.input.keys[77] ) {
+        if( game.input.keys[13] ) {
             game.operations.push(function() {
                 game.setState( new IntroState( new PlayState() ));
             });
