@@ -416,9 +416,11 @@ var PlayState = (function() {
         this.updateScore(dt);
 
         if( game.input.keys[78] || this.hp <= 0  ) {
+            if (!this.dieing) {
+                this.player.hit(4000);
+            }
             this.dieing = true;
             this.shakeTime = 2000;
-            this.player.hit(4000);
             //this.goToScoreScreen();
         }
 
