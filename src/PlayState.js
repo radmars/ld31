@@ -125,6 +125,7 @@ var PlayState = (function() {
             this.alive = false;
             this.planet.remove(this.quad.mesh);
             game.loader.get("audio/ship-explode").play();
+            game.state.shipsDestroyed++;
         }
     }
 
@@ -190,25 +191,30 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(1, 'particles/planetChunks/4'))
          .concat(mapAnimationAssets(1, 'particles/planetChunks/5'))
 
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris1'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris2'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris3'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris4'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris5'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
-        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris1'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris2'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris3'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris4'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris5'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
+         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
-        .concat(mapSoundAsset("ld31", 0.7))
-        .concat(mapSoundAsset("blackhole", 0.75))
-        .concat(mapSoundAsset("death"))
-        .concat(mapSoundAsset("missile-explode"))
-        .concat(mapSoundAsset("missile-fire"))
-        .concat(mapSoundAsset("pod-explode"))
-        .concat(mapSoundAsset("pod-launch", 0.9))
-        .concat(mapSoundAsset("ship-explode"))
-        .concat(mapSoundAsset("stun"))
-        .concat(mapSoundAsset("warpin"))
-        .concat(mapSoundAsset("pickup"))
+         .concat(mapSoundAsset("ld31", 0.7))
+         .concat(mapSoundAsset("blackhole", 0.75))
+         .concat(mapSoundAsset("death"))
+         .concat(mapSoundAsset("missile-explode"))
+         .concat(mapSoundAsset("missile-fire"))
+         .concat(mapSoundAsset("pod-explode"))
+         .concat(mapSoundAsset("pod-launch", 0.9))
+         .concat(mapSoundAsset("ship-explode"))
+         .concat(mapSoundAsset("stun"))
+         .concat(mapSoundAsset("warpin"))
+         .concat(mapSoundAsset("pickup"))
+
+         this.shipsDestroyed = 0;
+         this.menSaved = 0;
+         this.timeAlive = 0;
+         this.menLost = 0;
     };
 
     function mapAnimationAssets( count, name ) {
@@ -230,7 +236,6 @@ var PlayState = (function() {
     PlayState.prototype.onStart = function(game) {
         var self = this;
 
-        this.score = 0;
 
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
@@ -388,16 +393,26 @@ var PlayState = (function() {
     PlayState.prototype.updateScore = function(dt) {
         this.scoreCounter += dt;
         if(this.scoreCounter > 1000) {
-            this.score += Math.floor(this.scoreCounter/1000);
+            this.timeAlive += Math.floor(this.scoreCounter/1000);
             this.scoreCounter = this.scoreCounter % 1000;
         }
+
+        var score = this.calculateScore()
         // attach properties like a jerk
-        if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != this.score ) ) {
+        if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != score ) ) {
+            console.log({
+                shipsDestroyed: this.shipsDestroyed,
+                menSaved: this.menSaved,
+                menLost: this.menLost,
+                timeAlive: this.timeAlive,
+                totalScore: this.calculateScore(),
+            });
+
             if(this.scoreObject) {
                 this.scene2d.remove(this.scoreObject);
             }
-            this.scoreObject = TextRenderer.render(this.font, "Score: " + this.score);
-            this.scoreObject.score = this.score;
+            this.scoreObject = TextRenderer.render(this.font, "Score: " + score );
+            this.scoreObject.score = score;
             this.scoreObject.position.x = 0; // this.cx*2;
             this.scoreObject.position.y = 0; // this.cy*2;
             this.scoreObject.position.z = 4;
@@ -408,15 +423,22 @@ var PlayState = (function() {
 
     PlayState.prototype.goToScoreScreen = function() {
         var scores = {
-            shipsDestroyed: 123,
-            menSaved:345,
-            menLost: 586,
-            timeAlive: 123,
-            totalScore: this.score,
+            shipsDestroyed: this.shipsDestroyed,
+            menSaved: this.menSaved,
+            menLost: this.menLost,
+            timeAlive: this.timeAlive,
+            totalScore: this.calculateScore(),
         };
         game.operations.push(function() {
             game.setState( new GameOverState(scores) );
         });
+    }
+
+    PlayState.prototype.calculateScore = function() {
+        return this.shipsDestroyed * 20
+            + this.menSaved * 10
+            + this.timeAlive
+            - this.menLost * 15
     }
 
     PlayState.prototype.update = function(game, dt){
@@ -574,6 +596,10 @@ var PlayState = (function() {
                     for(var i=0; i<pod.men; i++){
                         addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
                     }
+                    self.menLost += pod.men;
+                }
+                else {
+                    self.menSaved += pod.men;
                 }
             }
         });
@@ -689,6 +715,7 @@ var PlayState = (function() {
                         addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, dist.x, dist.y );
 
                         man.die();
+                        self.menLost ++;
                         hitMan = true;
                         //TODO: spawn blood / man particle!
                     }
@@ -725,7 +752,6 @@ var PlayState = (function() {
                     var shipToMissile = ship.quad.mesh.position.clone();
                     shipToMissile.sub(missile.quad.mesh.position);
                     if(shipToMissile.length() < 32 && missile.collideCooldown <=0 ){
-                        self.score += 10;
                         missile.life = 0;
                         ship.die();
                     }
