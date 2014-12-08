@@ -48,6 +48,9 @@ var Player = (function() {
     Blackhole.prototype.update = function(game, dt) {
         this.quad.update(dt);
         this.counter += dt;
+
+
+
         if( this.counter < 1000 ) {
             this.calculatePosition(dt);
         }
@@ -89,17 +92,22 @@ var Player = (function() {
                     frames: TQuad.enumerate(20, "robot/shoot"),
                     frameTime: 33
                 },
+                {
+                    name: 'hit',
+                    frames: TQuad.enumerate(2, "robot/hit"),
+                    frameTime: 100
+                },
 
             ],
         });
 
+        this.hitTimer = 0;
         this.blackholeTimer = 0;
         this.quad.mesh.position.set(
             game.width / 2,
             game.height / 2 - 128,
             -1
         );
-
     }
 
     Player.prototype.addTo = function(container){
@@ -110,6 +118,14 @@ var Player = (function() {
     Player.prototype.update = function(game, dt) {
         this.quad.update(dt);
         this.blackholeTimer += dt;
+
+        if(this.hitTimer > 0){
+            this.hitTimer-=dt;
+            if(this.hitTimer<=0){
+                this.quad.setAnimation(this.walking ? 'walk' : 'idle');
+            }
+            return;
+        }
     }
 
     Player.prototype.setWalking = function(walking) {
@@ -141,6 +157,11 @@ var Player = (function() {
 
             return new Blackhole(game, planet);
         }
+    }
+
+    Player.prototype.hit = function(){
+        this.quad.setAnimation('hit');
+        this.hitTimer = 1000;
     }
 
     return Player;
