@@ -13,7 +13,7 @@ var EscapePod = (function() {
         offset = rotateV( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
         this.alive = true;
-        this.life = 10000;
+        this.life = 9000;
         this.waitOnPlanet = 5000;
         //collideCooldown prevents collision until X ms
         this.men = 1;

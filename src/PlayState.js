@@ -699,6 +699,8 @@ var PlayState = (function() {
                 }
                 else {
                     self.menSaved += pod.men;
+                    addWarpParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation + Math.PI*0.5 );
+                    game.loader.get("audio/warpin").play();
                 }
             }
         });
@@ -735,10 +737,11 @@ var PlayState = (function() {
                rot += Math.PI*0.5;
             }
             addWarpParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, rot );
+            game.loader.get("audio/warpin").play();
             ship.addTo(this.mars);
             this.ships.push(ship);
 
-            game.loader.get("audio/warpin").play();
+
         }
 
         if(this.mans.length < 5&& !this.dieing){
