@@ -78,6 +78,12 @@ var Game = (function(){
         this.callback = this.update.bind(this);
         this.settings = {};
         this.mainElement = element;
+        this.renderer.domElement.onfocus = function() {
+            self.focus = true;
+        };
+        this.renderer.domElement.onblur = function() {
+            self.focus = false;
+        }
 
         // Extract settings with some probably broken regex.
         window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(match, key, value) {
@@ -115,14 +121,16 @@ var Game = (function(){
     };
 
     Game.prototype.update = function() {
-        var delta, op;
-        while ((op = this.operations.pop())) {
-            op(this);
-        }
         delta = Date.now() - this.lastFrame;
+        if(this.focus) {
+            var delta, op;
+            while ((op = this.operations.pop())) {
+                op(this);
+            }
+            this.state.update(this, delta);
+            this.state.render(this);
+        }
         this.lastFrame = Date.now();
-        this.state.update(this, delta);
-        this.state.render(this);
         requestAnimationFrame(this.callback);
     };
     return Game;
