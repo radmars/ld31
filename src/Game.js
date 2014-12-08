@@ -37,6 +37,21 @@ function mapSoundAsset( base, vol, prefix ) {
     };
 };
 
+function isUp( game ) {
+    var keys = game.input.keys;
+    return keys[87] || keys[38];
+}
+
+function isRight( game ) {
+    var keys = game.input.keys;
+    return keys[68] || keys[39];
+}
+
+function isLeft( game ) {
+    var keys = game.input.keys;
+    return keys[65] || keys[37];
+}
+
 //Howler.mute();
 
 var Game = (function(){
