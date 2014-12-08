@@ -416,6 +416,7 @@ var PlayState = (function() {
         if( game.input.keys[78] || this.hp <= 0  ) {
             this.dieing = true;
             this.shakeTime = 2000;
+            this.player.hit(4000);
             //this.goToScoreScreen();
         }
 
@@ -424,8 +425,6 @@ var PlayState = (function() {
 
         if(this.dieing){
             this.dieTimer-=dt;
-
-            this.player.hit();
 
             this.dieExplodeTimer-=dt;
             if(this.dieExplodeTimer <= 0 && this.dieTimer > 2000){

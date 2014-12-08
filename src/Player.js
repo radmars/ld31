@@ -159,10 +159,10 @@ var Player = (function() {
         }
     }
 
-    Player.prototype.hit = function(){
+    Player.prototype.hit = function(stunLength){
         game.loader.get("audio/stun").play();
         this.quad.setAnimation('hit');
-        this.hitTimer = 1000;
+        this.hitTimer = stunLength || 1000;
     }
 
     return Player;
