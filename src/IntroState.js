@@ -44,7 +44,8 @@ var IntroState = (function(){
             this.textFiles,
             this.marsFiles,
             { name: this.bgAssetName, type: 'img' }
-        );
+
+        ).concat(mapSoundAsset("radmarslogo"));
     }
 
     IntroState.prototype.onBeat = function() {
@@ -60,6 +61,7 @@ var IntroState = (function(){
     IntroState.prototype.onStart = function(game) {
         var self = this;
 
+        game.loader.get("audio/radmarslogo").play();
         this.keyHandler = function( e ) {
             if( e.keyCode == 13 ) {
                 game.operations.push(function() {
@@ -203,6 +205,7 @@ var IntroState = (function(){
 
     IntroState.prototype.onStop = function() {
         game.input.keyDownEvent.remove(this.keyHandler);
+        game.loader.get("audio/radmarslogo").stop();
     }
 
     return IntroState;
