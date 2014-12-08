@@ -3,10 +3,10 @@ var IntroState = (function(){
     function IntroState( nextState ) {
         State.call(this);
         this.glassesFiles = [
-            { name: 'assets/intro/intro_glasses1.png', type: 'img' },
-            { name: 'assets/intro/intro_glasses2.png', type: 'img' },
-            { name: 'assets/intro/intro_glasses3.png', type: 'img' },
-            { name: 'assets/intro/intro_glasses4.png', type: 'img' }
+            { name: 'assets/intro/glasses1.png', type: 'img' },
+            { name: 'assets/intro/glasses2.png', type: 'img' },
+            { name: 'assets/intro/glasses3.png', type: 'img' },
+            { name: 'assets/intro/glasses4.png', type: 'img' }
         ];
 
         this.textFiles = [
@@ -46,12 +46,6 @@ var IntroState = (function(){
 
     IntroState.prototype.onStart = function(game) {
         var self = this;
-        this.scene2d = new THREE.Scene();
-        this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
-        this.camera2d.position.z = 10;
-
-        game.renderer.setClearColor(0x2e2e2e, 1);
-        game.renderer.autoClear = false;
 
         this.keyHandler = function( e ) {
             if( e.keyCode == 13 ) {
@@ -63,17 +57,48 @@ var IntroState = (function(){
 
         game.input.keyDownEvent.push(this.keyHandler);
 
+        this.scene2d = new THREE.Scene();
+        this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
+        this.camera2d.position.z = 10;
+        game.renderer.setClearColor(0x2e2e2e, 1);
+        game.renderer.autoClear = false;
+
+        this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
+        this.planet      = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars.png']}]});
+        this.atmosphere1 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere1.png']}]});
+        this.atmosphere2 = new TQuad(game, {animations: [{frames: ['assets/textures/bg/mars_atmosphere2.png']}]});
+
+        this.bgSprite.mesh.position.z    = -1;
+        this.atmosphere1.mesh.position.z = 2;
+        this.atmosphere2.mesh.position.z = 2;
+
+        this.worldObject = new THREE.Object3D();
+        this.worldObject.add(this.bgSprite.mesh);
+        this.worldObject.add(this.atmosphere1.mesh);
+        this.worldObject.add(this.planet.mesh);
+        this.worldObject.add(this.atmosphere2.mesh);
+        this.worldObject.position.set( game.width / 2, game.height / 2, 0 );
+        this.scene2d.add(this.worldObject);
+
         this.textMaterials = this.textFiles.map(function( file ) {
             return new THREE.SpriteMaterial({
                 map: game.loader.get( file.name ),
             });
         });
 
-        this.glassesMaterials = this.glassesFiles.map(function( file ) {
-            return new THREE.SpriteMaterial({
-                map: game.loader.get( file.name ),
-            });
+        this.glasses = new TQuad(game, {
+            animations: [
+                {
+                    frames: [
+                        'assets/intro/glasses1.png',
+                        'assets/intro/glasses2.png',
+                        'assets/intro/glasses3.png',
+                        'assets/intro/glasses4.png',
+                    ],
+                }
+            ],
         });
+        this.glasses.mesh.position.z = 3;
 
         this.textSprite = new THREE.Sprite( this.textMaterials[ 0 ] );
         this.textSprite.scale.set(
@@ -82,18 +107,13 @@ var IntroState = (function(){
             1
         );
 
-        this.glassesSprite = new THREE.Sprite( this.glassesMaterials[ 0 ] );
-        this.glassesSprite.scale.set( 144, -24, 1 );
-
         var bgMaterial = new THREE.SpriteMaterial({
             map: game.loader.get( this.bgAssetName ),
         });
 
-        this.bgSprite = new THREE.Sprite( bgMaterial );
-        this.bgSprite.scale.set( 800, -600, 1 );
-        this.scene2d.add(this.bgSprite);
         this.scene2d.add(this.textSprite);
-        this.scene2d.add(this.glassesSprite);
+        this.scene2d.add(this.glasses.mesh);
+
         this.controllers.push(function( game, dt ) {
             self.counter += dt;
 
@@ -119,19 +139,17 @@ var IntroState = (function(){
                 self.textSprite.material = self.textMaterials[ 2 ];
 
             if( self.counter < 2000)
-                self.glassesSprite.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
+                self.glasses.mesh.position.y = ( self.cy ) * (self.counter/2000.0) - 40;
             else if( self.counter < 2150 )
-                self.glassesSprite.material = self.glassesMaterials[ 1 ];
+                self.glasses.setFrame(1);
             else if( self.counter < 2300 )
-                self.glassesSprite.material = self.glassesMaterials[ 2 ];
+                self.glasses.setFrame(2);
             else if( self.counter < 2550 )
-                self.glassesSprite.material = self.glassesMaterials[ 3 ];
+                self.glasses.setFrame(3);
             else
-                self.glassesSprite.material = self.glassesMaterials[ 0 ];
+                self.glasses.setFrame(0);
 
-
-            self.bgSprite.position.set( self.cx, 400, 0 );
-            self.glassesSprite.position.x = self.cx;
+            self.glasses.mesh.position.x = self.cx;
 
             self.textSprite.position.set(
                 self.cx,
