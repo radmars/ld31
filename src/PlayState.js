@@ -489,37 +489,38 @@ var PlayState = (function() {
             this.shakeTime = 2000;
             //this.goToScoreScreen();
         }
+        if(!this.dieing){
+            var currPlanetImage =  5-Math.round(this.hp*0.5);
+            if(this.mars.currentPlanetAsset != currPlanetImage){
+                console.log("CHANGING PLANET IMAGE: " + currPlanetImage);
+                this.mars.currentPlanetAsset = currPlanetImage;
+                this.mars.remove(this.mars.planet.mesh);
+                switch(currPlanetImage){
+                    case 0:
+                        this.mars.planet = this.mars.planet1;
+                        break;
+                    case 1:
+                        this.mars.planet = this.mars.planet2;
+                        break;
+                    case 2:
+                        this.mars.planet = this.mars.planet3;
+                        break;
+                    case 3:
+                        this.mars.planet = this.mars.planet4;
+                        break;
+                    case 4:
+                        this.mars.planet = this.mars.planet5;
+                        break;
+                }
+                this.mars.add(this.mars.planet.mesh);
 
-        var currPlanetImage =  5-Math.round(this.hp*0.5);
-        if(this.mars.currentPlanetAsset != currPlanetImage){
-            console.log("CHANGING PLANET IMAGE: " + currPlanetImage);
-            this.mars.currentPlanetAsset = currPlanetImage;
-            this.mars.remove(this.mars.planet.mesh);
-            switch(currPlanetImage){
-                case 0:
-                    this.mars.planet = this.mars.planet1;
-                    break;
-                case 1:
-                    this.mars.planet = this.mars.planet2;
-                    break;
-                case 2:
-                    this.mars.planet = this.mars.planet3;
-                    break;
-                case 3:
-                    this.mars.planet = this.mars.planet4;
-                    break;
-                case 4:
-                    this.mars.planet = this.mars.planet5;
-                    break;
-            }
-            this.mars.add(this.mars.planet.mesh);
-
-            for(var i=0; i<10; i++){
-                var x = Math.random()*200-100;
-                var y = Math.random()*200-100;
-                addShipDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 1 );
-                addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 3 );
-                addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                for(var i=0; i<10; i++){
+                    var x = Math.random()*200-100;
+                    var y = Math.random()*200-100;
+                    addShipDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 1 );
+                    addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 3 );
+                    addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                }
             }
         }
 
