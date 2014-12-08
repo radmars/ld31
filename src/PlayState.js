@@ -155,6 +155,7 @@ var PlayState = (function() {
             }
         ]
          .concat(mapAnimationAssets(1, 'robot/idle'))
+         .concat(mapAnimationAssets(2, 'robot/hit'))
          .concat(mapAnimationAssets(2, 'tinyman/die'))
          .concat(mapAnimationAssets(1, 'tinyman/idle'))
          .concat(mapAnimationAssets(2, 'enemies/1'))
@@ -227,6 +228,8 @@ var PlayState = (function() {
         this.shakeTime = 0;
         this.scoreCounter = 0;
 
+        this.hp = 10;
+
         this.ships = [];
         this.missiles = [];
         this.particles = [];
@@ -235,7 +238,7 @@ var PlayState = (function() {
 
         this.escapePodSpawn = this.escapePodSpawnMax = 2000;
         this.shipSpawn = 1000;
-        this.shipSpawnMax = 10000;
+        this.shipSpawnMax = 15000;
 
         this.mans = [
             new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
@@ -394,21 +397,22 @@ var PlayState = (function() {
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
         this.updateScore(dt);
 
-        if( game.input.keys[78]  ) {
-            this.goToScoreScreen()
+        if( game.input.keys[78] || this.hp <= 0  ) {
+            this.goToScoreScreen();
         }
 
         var self = this;
         var rotation = 0;
-        if( game.input.keys[87] ) {
-            var blackhole = this.player.fire(game, this.mars);
-            if( blackhole ) {
-                this.blackholes.push(blackhole);
-            }
-        }
 
-        //if(!this.player.firing) {
-        var moving = false;
+        if(this.player.hitTimer<= 0){
+            if( game.input.keys[87] ) {
+                var blackhole = this.player.fire(game, this.mars);
+                if( blackhole ) {
+                    this.blackholes.push(blackhole);
+                }
+            }
+
+            var moving = false;
             if( game.input.keys[68] ) {
                 rotation -= dt * Math.PI / 1600;
                 var moving = true;
@@ -420,8 +424,8 @@ var PlayState = (function() {
                 this.player.direction(true);
             }
             this.player.setWalking(moving);
+        }
 
-        //}
         this.mars.rotate(rotation);
 
         this.escapePodSpawn-=dt;
@@ -437,7 +441,7 @@ var PlayState = (function() {
             self.mans.forEach(function(man) {
                 var dist = man.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if(dist.length() < 32 ){
+                if(dist.length() < 64 ){
                     man.die();
                     pod.men++;
                 }
@@ -446,7 +450,7 @@ var PlayState = (function() {
             self.ships.forEach(function(ship) {
                 var dist = ship.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if( dist.length() < 64  ){
+                if( dist.length() < 32  ){
                     ship.life = 0;
                     ship.die();
                     pod.life = 0;
@@ -457,7 +461,7 @@ var PlayState = (function() {
             self.missiles.forEach(function(missile) {
                 var dist = missile.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if( dist.length() < 64  ){
+                if( dist.length() < 32  ){
                     missile.life = 0;
                     pod.life = 0;
                     killed = true;
@@ -499,6 +503,11 @@ var PlayState = (function() {
         this.shipSpawn-=dt;
         if(this.shipSpawn<=0){
             this.shipSpawn = this.shipSpawnMax;
+            this.shipSpawnMax*=0.95;
+            if(this.shipSpawnMax < 5000){
+                this.shipSpawnMax = 2000;
+            }
+            console.log( "new ship spawing in: " + (this.shipSpawnMax/1000)  );
 
             var rot = Math.random() * Math.PI * 2;
             var speed = Math.random()*0.5 - 0.25
@@ -572,17 +581,18 @@ var PlayState = (function() {
             if(missile.quad.mesh.position.length() <= 105){
                 missile.life = 0;
                 self.shakeTime = 500;
+                self.hp--;
                 //did it hit a man?
                 addPlanetDebris(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, 4 );
 
                 self.mans.forEach(function(man) {
-                    var missileToMan = man.quad.mesh.position.clone();
-                    missileToMan.sub(missile.quad.mesh.position);
-                    if(missileToMan.length() < 64 ){
+                    var dist = man.quad.mesh.position.clone();
+                    dist.sub(missile.quad.mesh.position);
+                    if(dist.length() < 64 ){
 
-                        missileToMan.setLength(100 + Math.random()*50);
+                        dist.setLength(100 + Math.random()*50);
 
-                        addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, missileToMan.x, missileToMan.y );
+                        addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, dist.x, dist.y );
 
                         man.die();
                         //TODO: spawn blood / man particle!
@@ -597,6 +607,18 @@ var PlayState = (function() {
                 addExplodeParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 } );
             }
             else {
+
+                //vs player
+                var rotation = self.mars.rotation + Math.PI / 2;
+                var dist = new THREE.Vector2( Math.cos(rotation), Math.sin(rotation) );
+                dist.y *= -1;
+                dist.multiplyScalar( 120 );
+
+                dist.sub(missile.quad.mesh.position);
+                if(dist.length() < 32 ){
+                    self.player.hit();
+                    missile.life = 0;
+                }
 
                 for(var i = 0; i < self.ships.length; i++ ) {
                     var ship = self.ships[i];
