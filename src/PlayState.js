@@ -268,12 +268,30 @@ var PlayState = (function() {
         }
     }
 
+
+    PlayState.prototype.goToScoreScreen = function() {
+        var scores = {
+            shipsDestroyed: 123,
+            menSaved:345,
+            menLost: 586,
+            timeAlive: 123,
+        };
+        game.operations.push(function() {
+            game.setState( new GameOverState(scores) );
+        });
+    }
+
+
     PlayState.prototype.update = function(game, dt){
         State.prototype.update.call(this, game, dt);
 
         this.mars.atmosphere1.mesh.rotation.z -= dt/1000*0.05;
         this.mars.atmosphere2.mesh.rotation.z += dt/1000*0.05;
         this.updateScore(dt);
+
+        if( game.input.keys[78]  ) {
+            this.goToScoreScreen()
+        }
 
         var self = this;
         var rotation = 0;
@@ -485,7 +503,6 @@ var PlayState = (function() {
     };
 
     PlayState.prototype.onStop = function(game) {
-        game.input.keyUpEvent.remove(this.keyHandler);
         game.renderer.autoClear = true;
     };
 
