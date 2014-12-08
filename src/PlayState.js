@@ -229,6 +229,10 @@ var PlayState = (function() {
         this.scoreCounter = 0;
 
         this.hp = 10;
+        this.dieTimer = 3000;
+        this.dieExplodeTimer = 0;
+        this.dieing = false;
+        this.planetRemoved = false;
 
         this.ships = [];
         this.missiles = [];
@@ -398,11 +402,65 @@ var PlayState = (function() {
         this.updateScore(dt);
 
         if( game.input.keys[78] || this.hp <= 0  ) {
-            this.goToScoreScreen();
+            this.dieing = true;
+            this.shakeTime = 2000;
+            //this.goToScoreScreen();
         }
 
         var self = this;
         var rotation = 0;
+
+        if(this.dieing){
+            this.dieTimer-=dt;
+
+            this.player.hit();
+
+            this.dieExplodeTimer-=dt;
+            if(this.dieExplodeTimer <= 0 && this.dieTimer > 1000){
+
+                this.dieExplodeTimer = 100;
+                var x = Math.random()*200-100;
+                var y = Math.random()*200-100;
+                addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 4 );
+            }
+
+            if(this.dieTimer < 1000 && ! this.planetRemoved ){
+                this.planetRemoved = true;
+                this.mars.remove(this.mars.atmosphere1.mesh);
+                this.mars.remove(this.mars.atmosphere2.mesh);
+                this.mars.remove(this.mars.planet.mesh);
+                this.scene2d.remove(this.player.quad.mesh);
+
+                for(var i=0; i<10; i++){
+                    var x = Math.random()*200-100;
+                    var y = Math.random()*200-100;
+                    addShipDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 3 );
+                    addExplodeParticle(self.particles, self.mars, { x:x, y: y, z: 10 } );
+                }
+
+                this.mans.forEach(function(man) {
+                    var dist = man.quad.mesh.position.clone();
+                    dist.setLength(100 + Math.random()*50);
+                    addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, dist.x, dist.y );
+                    man.die();
+                });
+
+                this.escapePods.forEach(function(pod) {
+                    addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
+                    addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
+                    for(var i=0; i<pod.men; i++){
+                        addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
+                    }
+                });
+            }
+
+
+
+            if(this.dieTimer <= 0){
+                this.goToScoreScreen();
+            }
+        }
 
         if(this.player.hitTimer<= 0){
             if( game.input.keys[87] ) {
@@ -429,7 +487,7 @@ var PlayState = (function() {
         this.mars.rotate(rotation);
 
         this.escapePodSpawn-=dt;
-        if(this.escapePodSpawn < 0){
+        if(this.escapePodSpawn < 0 && !this.dieing){
             var pod = new EscapePod( game, this.mars, this.mars.planet.mesh.rotation, new THREE.Vector3(), new THREE.Vector3(0,125,0))
             this.escapePodSpawn = this.escapePodSpawnMax + pod.waitOnPlanet;
             this.escapePods.push( pod );
@@ -528,7 +586,7 @@ var PlayState = (function() {
         }
 
        // console.log(this.mans.length);
-        if(this.mans.length < 5){
+        if(this.mans.length < 5&& !this.dieing){
            var man =  new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1})
            man.addTo(this.mars);
            this.mans.push(man);
