@@ -28,28 +28,30 @@
             html, body {
                 height: 100%;
                 width: 100%;
+                color: white;
+                background: black;
             }
+
+            #game *{
+                outline: none;
+            }
+
             #game {
                 width: 973px;
                 height: 875px;
+                outline: none;
                 margin: auto auto;
             }
         </style>
     </head>
     <body>
-        <p>radmars; ld 31; circle of doom; murder circle; wasd do things. prolly
-        requires relatively hi res screen and a reasonable browser.</p>
-        <div id='game'></div>
+        <div id='game'>
+            <p>team radmars, ld 31, circle of doom / murder circle; [W] left, [D]
+        right, [W] shoot. Requires a relatively modern browser</p>
+
+        </div>
         <script type='text/javascript'>
             var game = new Game(document.getElementById('game'));
         </script>
-        <p>staff:</p>
-        <ul>
-            <li>adhesion</li>
-            <li>brendon</li>
-            <li>emarcotte</li>
-            <li>porter</li>
-            <li>roushey (CEO)</li>
-        </ul>
     </body>
 </html>
