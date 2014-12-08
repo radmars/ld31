@@ -235,7 +235,7 @@ var PlayState = (function() {
 
         this.escapePodSpawn = this.escapePodSpawnMax = 2000;
         this.shipSpawn = 1000;
-        this.shipSpawnMax = 10000;
+        this.shipSpawnMax = 15000;
 
         this.mans = [
             new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1}),
@@ -420,7 +420,7 @@ var PlayState = (function() {
             self.mans.forEach(function(man) {
                 var dist = man.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if(dist.length() < 32 ){
+                if(dist.length() < 64 ){
                     man.die();
                     pod.men++;
                 }
@@ -429,7 +429,7 @@ var PlayState = (function() {
             self.ships.forEach(function(ship) {
                 var dist = ship.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if( dist.length() < 64  ){
+                if( dist.length() < 32  ){
                     ship.life = 0;
                     ship.die();
                     pod.life = 0;
@@ -440,7 +440,7 @@ var PlayState = (function() {
             self.missiles.forEach(function(missile) {
                 var dist = missile.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
-                if( dist.length() < 64  ){
+                if( dist.length() < 32  ){
                     missile.life = 0;
                     pod.life = 0;
                     killed = true;
@@ -482,6 +482,11 @@ var PlayState = (function() {
         this.shipSpawn-=dt;
         if(this.shipSpawn<=0){
             this.shipSpawn = this.shipSpawnMax;
+            this.shipSpawnMax*=0.95;
+            if(this.shipSpawnMax < 5000){
+                this.shipSpawnMax = 2000;
+            }
+            console.log( "new ship spawing in: " + (this.shipSpawnMax/1000)  );
 
             var rot = Math.random() * Math.PI * 2;
             var speed = Math.random()*0.5 - 0.25
