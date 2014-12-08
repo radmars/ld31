@@ -170,6 +170,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'robot/walk'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
          .concat(mapAnimationAssets(2, 'escapePod'))
+         .concat(mapAnimationAssets(5, 'warp'))
 
     };
 
@@ -263,14 +264,29 @@ var PlayState = (function() {
         );
     };
 
-    function addMissileTrailParticle( particles, mars, pos ) {
+    function addWarpParticle( particles, mars, pos, rotation ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'warp',
+                frames: 5,
+                planet: mars,
+                life:500,
+                position: pos,
+                rotation: rotation
+            })
+        );
+    };
+
+    function addMissileTrailParticle( particles, mars, pos, rotation, offset ) {
         particles.push(
             new Particle(game, {
                 asset: 'missile/trail',
                 frames: 4,
                 planet: mars,
                 life:400,
-                position: pos
+                position: pos,
+                offset:offset,
+                rotation: rotation
             })
         );
     };
@@ -386,6 +402,12 @@ var PlayState = (function() {
 
             pod.update(game, dt);
 
+            if(pod.particleTimer > 150 && pod.waitOnPlanet <= 0) {
+                pod.particleTimer = 0;
+                addMissileTrailParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation, {x:-5,y:40} );
+                addMissileTrailParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, pod.rotation, {x:5,y:40} );
+            }
+
             if(! pod.alive){
                 self.escapePods.remove(pod);
                 if(killed){
@@ -412,11 +434,20 @@ var PlayState = (function() {
         if(this.shipSpawn<=0){
             this.shipSpawn = this.shipSpawnMax;
 
+            var rot = Math.random() * Math.PI * 2;
+            var speed = Math.random()*0.5 - 0.25
             var ship = new Ship(game, {
                 distance: Math.random() * 50 + 300,
-                rotation: Math.random() * Math.PI * 2,
-                speed: Math.random()*0.5 - 0.25
+                rotation: rot,
+                speed:speed
             });
+
+            if(speed > 0){
+               rot -= Math.PI*0.5;
+            }else{
+               rot += Math.PI*0.5;
+            }
+            addWarpParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, rot );
             ship.addTo(this.mars);
             this.ships.push(ship);
         }
@@ -524,7 +555,7 @@ var PlayState = (function() {
 
                 if(missile.particleTimer > 150 ) {
                     missile.particleTimer = 0;
-                    addMissileTrailParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 } );
+                    addMissileTrailParticle(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, missile.rotation, {x:0,y:-10} );
                 }
             }
         });

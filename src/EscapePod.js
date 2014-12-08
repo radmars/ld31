@@ -68,7 +68,7 @@ var EscapePod = (function() {
             this.vel.setLength(this.speed);
         }
 
-        this.quad.mesh.rotation.z = Math.atan2(this.vel.y, this.vel.x) + Math.PI*0.5;
+        this.quad.mesh.rotation.z = this.rotation= Math.atan2(this.vel.y, this.vel.x) + Math.PI*0.5;
 
         if(this.waitOnPlanet > 0){
             this.waitOnPlanet-=dt;

@@ -5,7 +5,7 @@ var Particle = (function() {
         var asset    = options.asset;
         var frames   = options.frames;
         var planet   = options.planet;
-        var rotation = 0; //options.rotation;
+        var rotation = options.rotation || 0;
         var life =  options.life || 1000;
         var position = options.position;
         var offset   = options.offset || { x: 0, y: 0 };
@@ -24,13 +24,13 @@ var Particle = (function() {
             ],
         });
 
-        this.rotation = 0;
+        this.rotation = rotation;
         offset = rotateV( new THREE.Vector3( offset.x, offset.y ), this.rotation );
 
         this.vel = new THREE.Vector3( velX, velY, 0);
         this.life = life;
         this.alive = true;
-        this.quad.mesh.rotation.z = 0;
+        this.quad.mesh.rotation.z = this.rotation;
         this.quad.mesh.position.x = position.x + offset.x;
         this.quad.mesh.position.y = position.y + offset.y;
         this.quad.mesh.position.z = 4;
