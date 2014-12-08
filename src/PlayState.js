@@ -72,8 +72,19 @@ var PlayState = (function() {
         this.quad = new TQuad(game, {
             animations: [
                 {
-                    frames: TQuad.enumerate( 2, 'enemies/' + this.enemyId),
+                    frames: [
+                        'assets/textures/enemies/' + this.enemyId + '/1.png',
+                        'assets/textures/enemies/' + this.enemyId + '/3.png',
+                    ],
+                    frameTime: 100,
                     name: 'idle',
+                },
+                {
+                    frames: [
+                        'assets/textures/enemies/' + this.enemyId + '/2.png',
+                    ],
+                    frameTime: 2000,
+                    name: 'fire',
                 },
             ],
         });
@@ -101,6 +112,7 @@ var PlayState = (function() {
     }
 
     Ship.prototype.update = function( dt, planet ) {
+        this.quad.update(dt);
         this.planet = planet;
         this.fireCounter += dt;
 
@@ -113,10 +125,10 @@ var PlayState = (function() {
         this.fireCounter = 0;
         var self = this;
         self.quad.setFrame(1);
-        window.setTimeout(function() {
+        self.quad.setAnimation('fire', function() {
             self.firing = false;
-            self.quad.setFrame(0);
-        }, 1000);
+            self.quad.setAnimation('idle');
+        });
         this.firing = true;
     }
 
@@ -171,9 +183,9 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(2, 'robot/hit'))
          .concat(mapAnimationAssets(2, 'tinyman/die'))
          .concat(mapAnimationAssets(1, 'tinyman/idle'))
-         .concat(mapAnimationAssets(2, 'enemies/1'))
-         .concat(mapAnimationAssets(2, 'enemies/2'))
-         .concat(mapAnimationAssets(2, 'enemies/3'))
+         .concat(mapAnimationAssets(3, 'enemies/1'))
+         .concat(mapAnimationAssets(3, 'enemies/2'))
+         .concat(mapAnimationAssets(3, 'enemies/3'))
          .concat(mapAnimationAssets(2, 'tinyman/run'))
          .concat(mapAnimationAssets(20, 'robot/shoot'))
          .concat(mapAnimationAssets(3, 'blackhole/close'))
@@ -400,14 +412,6 @@ var PlayState = (function() {
         var score = this.calculateScore()
         // attach properties like a jerk
         if( ( !this.scoreObject ) || (this.scoreObject && this.scoreObject.score != score ) ) {
-            console.log({
-                shipsDestroyed: this.shipsDestroyed,
-                menSaved: this.menSaved,
-                menLost: this.menLost,
-                timeAlive: this.timeAlive,
-                totalScore: this.calculateScore(),
-            });
-
             if(this.scoreObject) {
                 this.scene2d.remove(this.scoreObject);
             }
@@ -622,8 +626,6 @@ var PlayState = (function() {
             if(this.shipSpawnMax < 5000){
                 this.shipSpawnMax = 2000;
             }
-            console.log( "new ship spawing in: " + (this.shipSpawnMax/1000)  );
-
             var rot = Math.random() * Math.PI * 2;
             var speed = Math.random()*0.5 - 0.25
             var ship = new Ship(game, {
@@ -644,7 +646,6 @@ var PlayState = (function() {
             game.loader.get("audio/warpin").play();
         }
 
-       // console.log(this.mans.length);
         if(this.mans.length < 5&& !this.dieing){
            var man =  new Man(game, {rotation: Math.random() * Math.PI * 2, speed: Math.random() * 2 - 1})
            man.addTo(this.mars);
