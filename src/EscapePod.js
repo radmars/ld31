@@ -36,6 +36,8 @@ var EscapePod = (function() {
         //console.log(this.vel);
 
         this.particleTimer = 0;
+
+        this.launched = false;
     }
 
     EscapePod.prototype.gravitize = function( blackhole, dt ) {
@@ -75,6 +77,11 @@ var EscapePod = (function() {
         }else{
             pos.x += this.vel.x * dt/1000;
             pos.y += this.vel.y * dt/1000;
+
+            if (!this.launched) {
+                this.launched = true;
+                game.loader.get("audio/pod-launch").play();
+            }
         }
 
         if(this.alive && this.life <= 0){

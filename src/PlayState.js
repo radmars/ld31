@@ -118,6 +118,7 @@ var PlayState = (function() {
         if(this.alive){
             this.alive = false;
             this.planet.remove(this.quad.mesh);
+            game.loader.get("audio/ship-explode").play();
         }
     }
 
@@ -185,6 +186,17 @@ var PlayState = (function() {
         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
         .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
+        .concat(mapSoundAsset("ld31"))
+        .concat(mapSoundAsset("blackhole", 0.4))
+        .concat(mapSoundAsset("death", 0.36))
+        .concat(mapSoundAsset("missile-explode"))
+        .concat(mapSoundAsset("missile-fire"))
+        .concat(mapSoundAsset("pod-explode"))
+        .concat(mapSoundAsset("pod-launch", 0.75))
+        .concat(mapSoundAsset("ship-explode"))
+        .concat(mapSoundAsset("stun"))
+        .concat(mapSoundAsset("warpin"))
+        .concat(mapSoundAsset("pickup"))
     };
 
     function mapAnimationAssets( count, name ) {
@@ -404,6 +416,7 @@ var PlayState = (function() {
             var blackhole = this.player.fire(game, this.mars);
             if( blackhole ) {
                 this.blackholes.push(blackhole);
+                game.loader.get("audio/blackhole").play();
             }
         }
 
@@ -438,6 +451,7 @@ var PlayState = (function() {
                 var dist = man.quad.mesh.position.clone();
                 dist.sub(pod.quad.mesh.position);
                 if(dist.length() < 32 ){
+                    game.loader.get("audio/pickup").play();
                     man.die();
                     pod.men++;
                 }
@@ -476,6 +490,8 @@ var PlayState = (function() {
                 self.escapePods.remove(pod);
                 if(killed){
                     self.shakeTime = 500;
+                    game.loader.get("audio/pod-explode").play();
+                    game.loader.get("audio/death").play();
                     addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
                     addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
                     for(var i=0; i<pod.men; i++){
@@ -516,6 +532,8 @@ var PlayState = (function() {
             addWarpParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, rot );
             ship.addTo(this.mars);
             this.ships.push(ship);
+
+            game.loader.get("audio/warpin").play();
         }
 
        // console.log(this.mans.length);
@@ -538,6 +556,7 @@ var PlayState = (function() {
             if(ship.fireCounter > ship.fireCounterMax){
                 ship.fire();
                 self.missiles.push( new Missile( game, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
+                game.loader.get("audio/missile-fire").play();
             }
 
             if(!ship.alive){
@@ -572,8 +591,10 @@ var PlayState = (function() {
             if(missile.quad.mesh.position.length() <= 105){
                 missile.life = 0;
                 self.shakeTime = 500;
+                game.loader.get("audio/missile-explode").play();
                 //did it hit a man?
                 addPlanetDebris(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, 4 );
+                var hitMan = false;
 
                 self.mans.forEach(function(man) {
                     var missileToMan = man.quad.mesh.position.clone();
@@ -585,9 +606,14 @@ var PlayState = (function() {
                         addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, missileToMan.x, missileToMan.y );
 
                         man.die();
+                        hitMan = true;
                         //TODO: spawn blood / man particle!
                     }
                 });
+
+                if (hitMan) {
+                    game.loader.get("audio/death").play();
+                }
             }
 
             missile.update(game, dt);
@@ -615,6 +641,7 @@ var PlayState = (function() {
                         var missileToMissile = missile2.quad.mesh.position.clone();
                         missileToMissile.sub(missile.quad.mesh.position);
                         if(missileToMissile.length() < 16 ){
+                            game.loader.get("audio/missile-explode").play();
                             missile.life = 0;
                             missile2.life = 0;
                         }

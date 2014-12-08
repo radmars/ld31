@@ -21,6 +21,23 @@ function rotateV( v, r ) {
     return v;
 }
 
+function mapSoundAsset( base, vol, prefix ) {
+    return {
+        name: "audio/" + (prefix || "") + base,
+        volume: vol,
+        urls: [
+                "assets/audio/" + (prefix || "") + base + ".ogg",
+                "assets/audio/" + (prefix || "") + base + ".m4a"
+        ],
+        type: 'audio',
+        buffer: true,
+        callback: function( audio ) {
+            audio.origVolume= vol;
+        }
+    };
+};
+
+//Howler.mute();
 
 var Game = (function(){
     "use strict";
