@@ -160,6 +160,7 @@ var Player = (function() {
     }
 
     Player.prototype.hit = function(){
+        game.loader.get("audio/stun").play();
         this.quad.setAnimation('hit');
         this.hitTimer = 1000;
     }
