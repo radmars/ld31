@@ -241,7 +241,7 @@ var PlayState = (function() {
         this.scoreCounter = 0;
 
         this.hp = 10;
-        this.dieTimer = 3000;
+        this.dieTimer = 4000;
         this.dieExplodeTimer = 0;
         this.dieing = false;
         this.planetRemoved = false;
@@ -428,7 +428,7 @@ var PlayState = (function() {
             this.player.hit();
 
             this.dieExplodeTimer-=dt;
-            if(this.dieExplodeTimer <= 0 && this.dieTimer > 1000){
+            if(this.dieExplodeTimer <= 0 && this.dieTimer > 2000){
 
                 this.dieExplodeTimer = 100;
                 var x = Math.random()*200-100;
@@ -437,7 +437,7 @@ var PlayState = (function() {
                 addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 4 );
             }
 
-            if(this.dieTimer < 1000 && ! this.planetRemoved ){
+            if(this.dieTimer < 2000 && ! this.planetRemoved ){
                 this.planetRemoved = true;
                 this.mars.remove(this.mars.atmosphere1.mesh);
                 this.mars.remove(this.mars.atmosphere2.mesh);
