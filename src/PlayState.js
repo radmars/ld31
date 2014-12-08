@@ -171,6 +171,19 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(5, 'particles/explode'))
          .concat(mapAnimationAssets(2, 'escapePod'))
          .concat(mapAnimationAssets(5, 'warp'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/1'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/2'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/3'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/4'))
+         .concat(mapAnimationAssets(1, 'particles/planetChunks/5'))
+
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris1'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris2'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris3'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris4'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris5'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
+        .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
     };
 
@@ -306,6 +319,40 @@ var PlayState = (function() {
         );
     };
 
+    function addPlanetDebris(particles, mars, pos, num){
+        for(var i=0; i<num; i++){
+            particles.push(
+                new Particle(game, {
+                    asset: 'particles/planetChunks/' + (Math.round(Math.random()*4+1)),
+                    frames: 1,
+                    planet: mars,
+                    life:1500,
+                    velX:Math.random()*200-100,
+                    velY:Math.random()*200-100,
+                    rotateSpeed:4.0,
+                    position: pos
+                })
+            );
+        }
+    };
+
+    function addShipDebris(particles, mars, pos, num){
+        for(var i=0; i<num; i++){
+            particles.push(
+                new Particle(game, {
+                    asset: 'particles/debris/shipDebris' + (Math.round(Math.random()*6+1)),
+                    frames: 1,
+                    planet: mars,
+                    life:2000,
+                    velX:Math.random()*200-100,
+                    velY:Math.random()*200-100,
+                    rotateSpeed:4.0,
+                    position: pos
+                })
+            );
+        }
+    };
+
     PlayState.prototype.updateScore = function(dt) {
         this.scoreCounter += dt;
         if(this.scoreCounter > 1000) {
@@ -411,6 +458,8 @@ var PlayState = (function() {
             if(! pod.alive){
                 self.escapePods.remove(pod);
                 if(killed){
+                    self.shakeTime = 500;
+                    addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
                     addExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
                     for(var i=0; i<pod.men; i++){
                         addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
@@ -477,6 +526,7 @@ var PlayState = (function() {
             if(!ship.alive){
                 self.ships.remove(ship);
                 addExplodeParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 } );
+                addShipDebris(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 10 }, 3 );
             }
         });
 
@@ -506,6 +556,7 @@ var PlayState = (function() {
                 missile.life = 0;
                 self.shakeTime = 500;
                 //did it hit a man?
+                addPlanetDebris(self.particles, self.mars, { x: missile.quad.mesh.position.x, y: missile.quad.mesh.position.y, z: 10 }, 4 );
 
                 self.mans.forEach(function(man) {
                     var missileToMan = man.quad.mesh.position.clone();
