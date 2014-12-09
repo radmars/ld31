@@ -271,7 +271,8 @@ var PlayState = (function() {
          .concat(mapSoundAsset("pickup"))
          .concat(mapSoundAsset("planet-explode-1"))
          .concat(mapSoundAsset("planet-explode-2"))
-         .concat(mapSoundAsset("build"))
+         .concat(mapSoundAsset("build", 0.7))
+         .concat(mapSoundAsset("step", 0.5))
 
          this.shipsDestroyed = 0;
          this.menSaved = 0;

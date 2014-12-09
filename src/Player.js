@@ -162,6 +162,14 @@ var Player = (function() {
             }
             return;
         }
+
+        if ((this.quad.currentFrame == 1 || this.quad.currentFrame == 3) && !this.stepped) {
+            game.loader.get("audio/step").play();
+            this.stepped = true;
+        }
+        else if ((this.quad.currentFrame == 0 || this.quad.currentFrame == 2) && this.stepped) {
+            this.stepped = false;
+        }
     }
 
     Player.prototype.setWalking = function(walking) {
