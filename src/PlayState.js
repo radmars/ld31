@@ -247,7 +247,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
          .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
-         .concat(mapSoundAsset("ld31", 0.7))
+         .concat(mapSoundAsset("ld31", 0.65))
          .concat(mapSoundAsset("blackhole", 0.75))
          .concat(mapSoundAsset("death"))
          .concat(mapSoundAsset("missile-explode"))
