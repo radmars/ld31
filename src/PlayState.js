@@ -499,7 +499,7 @@ var PlayState = (function() {
             if(this.scoreObject) {
                 this.scene2d.remove(this.scoreObject);
             }
-            this.scoreObject = TextRenderer.render(this.font, "Score: " + score );
+            this.scoreObject = TextRenderer.render(this.font, "" + score );
             this.scoreObject.score = score;
             this.scoreObject.position.x = 0; // this.cx*2;
             this.scoreObject.position.y = 0; // this.cy*2;
