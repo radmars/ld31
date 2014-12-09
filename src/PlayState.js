@@ -248,6 +248,9 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(1, 'particles/debris/shipDebris6'))
          .concat(mapAnimationAssets(1, 'particles/debris/shipDebris7'))
 
+         .concat(mapAnimationAssets(1, 'particles/glasses/1'))
+         .concat(mapAnimationAssets(1, 'particles/glasses/2'))
+
          .concat(mapSoundAsset("ld31", 0.65))
          .concat(mapSoundAsset("blackhole", 0.75))
          .concat(mapSoundAsset("death"))
@@ -307,11 +310,12 @@ var PlayState = (function() {
         this.shakeTime = 0;
         this.scoreCounter = 0;
 
-        this.hp = 10;
-        this.dieTimer = 4000;
+        this.hp = 1;
+        this.dieTimer = 5000;
         this.dieExplodeTimer = 0;
         this.dieing = false;
         this.planetRemoved = false;
+        this.playerRemoved = false;
 
         this.ships = [];
         this.missiles = [];
@@ -433,7 +437,7 @@ var PlayState = (function() {
                     asset: 'particles/debris/shipDebris' + (Math.round(Math.random()*6+1)),
                     frames: 1,
                     planet: mars,
-                    life:2000,
+                    life:1500 + Math.random()*500,
                     velX:Math.random()*200-100,
                     velY:Math.random()*200-100,
                     rotateSpeed:4.0,
@@ -496,9 +500,9 @@ var PlayState = (function() {
         if( this.hp <= 0  ) {
             if (!this.dieing) {
                 this.player.hit(4000);
+                this.shakeTime = 2000;
             }
             this.dieing = true;
-            this.shakeTime = 2000;
         }
         if(!this.dieing){
             var currPlanetImage =  5-Math.round(this.hp*0.5);
@@ -522,8 +526,25 @@ var PlayState = (function() {
         if(this.dieing){
             this.dieTimer-=dt;
 
+
+            if(this.mars.rotation != 0){
+                var step = 1.0 * (dt/1000);
+
+                console.log(this.mars.rotation);
+
+                if(Math.abs(this.mars.rotation) <= step){
+                    this.mars.rotate(this.mars.rotation*-1);
+                }
+                else if(this.mars.rotation > 0){
+                    this.mars.rotate(step*-1);
+                }else if(this.mars.rotation < 0){
+                    this.mars.rotate(step);
+                }
+
+            }
+
             this.dieExplodeTimer-=dt;
-            if(this.dieExplodeTimer <= 0 && this.dieTimer > 2000){
+            if(this.dieExplodeTimer <= 0 && this.dieTimer > 3000){
 
                 this.dieExplodeTimer = 100;
                 var x1 = Math.random();
@@ -539,12 +560,13 @@ var PlayState = (function() {
                 addPlanetDebris(self.particles, self.mars, { x:x, y: y, z: 10 }, 4 );
             }
 
-            if(this.dieTimer < 2000 && ! this.planetRemoved ){
+            if(this.dieTimer < 3000 && ! this.planetRemoved ){
+                this.shakeTime = 1000;
                 this.planetRemoved = true;
                 this.mars.remove(this.mars.atmosphere1.mesh);
                 this.mars.remove(this.mars.atmosphere2.mesh);
                 this.mars.remove(this.mars.planet.mesh);
-                this.scene2d.remove(this.player.quad.mesh);
+                this.mars.remove(this.mars.glasses.mesh);
 
                 game.loader.get("audio/planet-explode-2").play();
 
@@ -559,22 +581,64 @@ var PlayState = (function() {
                     }
                 }
 
+                self.particles.push(
+                    new Particle(game, {
+                        asset: 'particles/glasses/1',
+                        frames: 1,
+                        planet: self.mars,
+                        life:2000,
+                        position: {x:-50, y:0, z:10},
+                        velX:-150,
+                        velY:-50,
+                        rotateSpeed:-1.0
+                    })
+                );
+
+                self.particles.push(
+                    new Particle(game, {
+                        asset: 'particles/glasses/2',
+                        frames: 1,
+                        planet: self.mars,
+                        life:2000,
+                        position: {x:50, y:0, z:10},
+                        velX:100,
+                        velY:-50,
+                        rotateSpeed:2.0
+                    })
+                );
+
                 this.mans.forEach(function(man) {
                     var dist = man.quad.mesh.position.clone();
-                    dist.setLength(100 + Math.random()*50);
+                    dist.setLength(200 + Math.random()*50);
                     addTinyManParticle(self.particles,self.mars, { x: man.quad.mesh.position.x, y: man.quad.mesh.position.y, z: 10 }, dist.x, dist.y );
                     man.die();
                 });
 
                 this.escapePods.forEach(function(pod) {
+                    pod.life = 0;
                     addShipDebris(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, 3 );
                     addBigExplodeParticle(self.particles, self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 } );
                     for(var i=0; i<pod.men; i++){
                         addTinyManParticle(self.particles,self.mars, { x: pod.quad.mesh.position.x, y: pod.quad.mesh.position.y, z: 10 }, Math.random()*200-100, Math.random()*200-100 );
                     }
                 });
+
+                this.ships.forEach(function(ship) {
+                    ship.life = 0;
+                    ship.die();
+                });
+
+                this.missiles.forEach(function(missile) {
+                    missile.life = 0;
+                });
             }
 
+
+
+            if(!this.playerRemoved){
+                this.playerRemoved = true;
+                this.scene2d.remove(this.player.quad.mesh);
+            }
 
             if(this.dieTimer <= 0){
                 this.goToScoreScreen();
@@ -694,7 +758,7 @@ var PlayState = (function() {
 
 
         this.shipSpawn-=dt;
-        if(this.shipSpawn<=0){
+        if(this.shipSpawn<=0&& !this.dieing){
             this.shipSpawn = this.shipSpawnMax;
             this.shipSpawnMax*=0.95;
             if(this.shipSpawnMax < 5000){
@@ -737,7 +801,7 @@ var PlayState = (function() {
         this.ships.forEach(function(ship) {
             ship.update(dt, self.mars);
 
-            if(ship.fireCounter > ship.fireCounterMax){
+            if(ship.fireCounter > ship.fireCounterMax && !self.dieing){
                 ship.fire();
                 self.missiles.push( new Missile( game, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
                 game.loader.get("audio/missile-fire").play();
