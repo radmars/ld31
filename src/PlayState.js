@@ -81,6 +81,7 @@ var PlayState = (function() {
             3: { x: -20, y: 40 }
         }[this.enemyId];
 
+        this.particleCounter = 300;
         this.fireCounter = 0;
         this.fireCounterMax = 3000 + Math.random() * 4000;
 
@@ -130,6 +131,8 @@ var PlayState = (function() {
         this.quad.update(dt);
         this.planet = planet;
         this.fireCounter += dt;
+
+        this.particleCounter-=dt;
 
         if(!this.firing){
          this.rotate( dt * this.speed * Math.PI / 1800);
@@ -250,6 +253,10 @@ var PlayState = (function() {
 
          .concat(mapAnimationAssets(1, 'particles/glasses/1'))
          .concat(mapAnimationAssets(1, 'particles/glasses/2'))
+         .concat(mapAnimationAssets(1, "particles/enemyEngine"))
+         .concat(mapAnimationAssets(1, "particles/blood/1"))
+         .concat(mapAnimationAssets(1, "particles/blood/2"))
+         .concat(mapAnimationAssets(1, "particles/blood/3"))
 
          .concat(mapSoundAsset("ld31", 0.65))
          .concat(mapSoundAsset("blackhole", 0.75))
@@ -384,6 +391,21 @@ var PlayState = (function() {
         );
     };
 
+
+    function addEnemyShipTrailParticle( particles, mars, pos, rotation, offset ) {
+        particles.push(
+            new Particle(game, {
+                asset: 'particles/enemyEngine',
+                frames: 1,
+                planet: mars,
+                life:200,
+                position: pos,
+                offset:offset,
+                rotation: rotation
+            })
+        );
+    };
+
     function addMissileTrailParticle( particles, mars, pos, rotation, offset ) {
         particles.push(
             new Particle(game, {
@@ -411,6 +433,21 @@ var PlayState = (function() {
                 position: pos
             })
         );
+
+        for(var i=0; i<3; i++){
+            particles.push(
+                new Particle(game, {
+                    asset: 'particles/blood/' + (Math.round(Math.random()*2+1)),
+                    frames: 1,
+                    planet: mars,
+                    life:800+Math.random()*500,
+                    velX:Math.random()*100-50,
+                    velY:Math.random()*100-50,
+                    rotateSpeed:5.0,
+                    position: pos
+                })
+            );
+        }
     };
 
     function addPlanetDebris(particles, mars, pos, num){
@@ -805,6 +842,11 @@ var PlayState = (function() {
                 ship.fire();
                 self.missiles.push( new Missile( game, self.mars, ship.quad.mesh.rotation, ship.quad.mesh.position, ship.mouthSpot) );
                 game.loader.get("audio/missile-fire").play();
+            }
+
+            if(ship.particleCounter <= 0 && !ship.firing){
+                ship.particleCounter = 200;
+                //addEnemyShipTrailParticle(self.particles, self.mars, { x: ship.quad.mesh.position.x, y: ship.quad.mesh.position.y, z: 0 }, ship.rotation, {x:-10,y:0} );
             }
 
             if(!ship.alive){
