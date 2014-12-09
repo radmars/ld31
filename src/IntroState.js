@@ -22,6 +22,7 @@ var IntroState = (function(){
         ];
 
         this.bgAssetName = "assets/intro/intro_bg.png";
+        this.scoresAssetName = "assets/textures/ui/scores.png";
 		
 		this.marsFiles = [
             { name: 'assets/intro/mars1.png', type: 'img', callback: pixelize },
@@ -43,8 +44,8 @@ var IntroState = (function(){
             this.glassesFiles,
             this.textFiles,
             this.marsFiles,
-            { name: this.bgAssetName, type: 'img' }
-
+            { name: this.bgAssetName, type: 'img' },
+            { name: this.scoresAssetName, type: 'img', callback: pixelize }
         ).concat(mapSoundAsset("radmarslogo"))
         .concat(mapSoundAsset("thunk", 0.5));
     }

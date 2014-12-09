@@ -28,27 +28,40 @@ var GameOverState = (function() {
         this.scene2d = new THREE.Scene();
         this.camera2d = new THREE.OrthographicCamera( 0, game.width, 0, game.height );
         this.camera2d.position.z = 10;
+        game.renderer.setClearColor(0x2e2e2e, 1);
+        game.renderer.autoClear = false;
+        
         this.font = new TextRenderer.Font({
             font: "monospace",
-            size: 32,
+            size: 64,
             fgColor: 'white',
         });
         var self = this;
 
-        game.renderer.setClearColor(0x2e2e2e, 1);
-        game.renderer.autoClear = false;
-
+		this.bgSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/bg/bg.png']}]});
+		this.scoreSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/ui/scores.png']}]});
+			
+ 		this.bgSprite.mesh.position.z    = -1;
+ 		this.scoreSprite.mesh.position.x = -100;
+				
+		this.worldObject = new THREE.Object3D();
+        this.worldObject.add(this.bgSprite.mesh);
+        this.worldObject.add(this.scoreSprite.mesh);
+        this.worldObject.position.set( game.width / 2, game.height / 2, 0 );
+		this.scene2d.add(this.worldObject);
+		
         [
-            "Ships destroyed: " + this.shipsDestroyed,
-            "Brave souls saved: " + this.menSaved,
-            "Brave souls destroyed: " + this.menLost,
-            "Duration of apocalypse: " + this.timeAlive,
-            "Total: " + this.totalScore,
+            " " + this.shipsDestroyed,
+            " " + this.menSaved,
+            " " + this.menLost,
+            " " + this.timeAlive,
+            " " + this.totalScore,
 
         ].forEach(function(measure,i ) {
-            var scoreObject = TextRenderer.render(self.font, measure);
-            scoreObject.position.x = 0;
-            scoreObject.position.y = i * 32;
+            var scoreObject = TextRenderer.render(self.font, measure);       
+            scoreObject.position.x = game.width/2 + 115;
+            scoreObject.position.y = (game.height/2 - 229) + i * 80;
+            if ( i==4 ) scoreObject.position.y = (game.height/2 - 229) + (i+1)*80;
             scoreObject.position.z = 4;
             self.scene2d.add(scoreObject);
         });
