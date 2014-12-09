@@ -523,10 +523,10 @@ var PlayState = (function() {
     }
 
     PlayState.prototype.calculateScore = function() {
-        return this.shipsDestroyed * 20
-            + this.menSaved * 10
+        return this.shipsDestroyed * 25
+            + this.menSaved * 15
             + this.timeAlive
-            - this.menLost * 15
+            - this.menLost * 5
     }
 
     PlayState.prototype.update = function(game, dt){
