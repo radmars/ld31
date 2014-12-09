@@ -229,6 +229,7 @@ var PlayState = (function() {
          .concat(mapAnimationAssets(4, 'missile/trail'))
          .concat(mapAnimationAssets(4, 'robot/jump'))
          .concat(mapAnimationAssets(4, 'robot/walk'))
+         .concat(mapAnimationAssets(29, 'robot/build'))
          .concat(mapAnimationAssets(5, 'particles/explode'))
          .concat(mapAnimationAssets(10, 'particles/bigExplode'))
          .concat(mapAnimationAssets(2, 'escapePod'))
@@ -319,7 +320,7 @@ var PlayState = (function() {
         this.escapePods = [];
 
         this.escapePodSpawn = this.escapePodSpawnMax = 2000;
-        this.shipSpawn = 1000;
+        this.shipSpawn = 3000;
         this.shipSpawnMax = 15000;
 
         this.mans = [
@@ -573,7 +574,6 @@ var PlayState = (function() {
                     }
                 });
             }
-
 
 
             if(this.dieTimer <= 0){

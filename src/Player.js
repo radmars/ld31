@@ -97,17 +97,52 @@ var Player = (function() {
                     frames: TQuad.enumerate(2, "robot/hit"),
                     frameTime: 100
                 },
-
+                {
+                    name: 'hit',
+                    frames: TQuad.enumerate(2, "robot/hit"),
+                    frameTime: 100
+                },
+                {
+                    name: 'build',
+                    frames: TQuad.enumerate(29, "robot/build"),
+                    frameTime: 66
+                }
             ],
         });
 
-        this.hitTimer = 0;
-        this.blackholeTimer = 0;
+        var self = this;
+        this.hitTimer = 3000;
+
+
+
+        self.quad.mesh.scale.set(
+            self.quad.width*2.0*1.125,
+            -self.quad.height*2.0*3.125,
+            1
+        );
         this.quad.mesh.position.set(
             game.width / 2,
-            game.height / 2 - 128,
+            game.height / 2 - 128 - 70,
             -1
         );
+
+        this.quad.setAnimation( 'build', function() {
+            self.hitTimer = 0;
+            self.quad.setAnimation('idle');
+            self.quad.mesh.scale.set(
+                self.quad.width*2.0,
+                -self.quad.height*2.0,
+                1
+            );
+            self.quad.mesh.position.set(
+                game.width / 2,
+                game.height / 2 - 128,
+                -1
+            );
+        });
+
+        this.blackholeTimer = 0;
+
     }
 
     Player.prototype.addTo = function(container){
