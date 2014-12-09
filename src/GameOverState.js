@@ -33,7 +33,7 @@ var GameOverState = (function() {
         
         this.font = new TextRenderer.Font({
             font: "monospace",
-            size: 64,
+            size: 56,
             fgColor: 'white',
         });
         var self = this;
@@ -42,7 +42,7 @@ var GameOverState = (function() {
 		this.scoreSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/ui/scores.png']}]});
 			
  		this.bgSprite.mesh.position.z    = -1;
- 		this.scoreSprite.mesh.position.x = -100;
+ 		this.scoreSprite.mesh.position.x = -130;
 				
 		this.worldObject = new THREE.Object3D();
         this.worldObject.add(this.bgSprite.mesh);
@@ -51,17 +51,17 @@ var GameOverState = (function() {
 		this.scene2d.add(this.worldObject);
 		
         [
-            " " + this.shipsDestroyed,
-            " " + this.menSaved,
-            " " + this.menLost,
-            " " + this.timeAlive,
+            " " + this.menSaved + " (" + this.menSaved*15 + ")",
+            " " + this.menLost + " (-" + this.menLost*5 + ")",
+            " " + this.shipsDestroyed + " (" + this.shipsDestroyed*25 + ")",
+            " " + this.timeAlive + " (" + this.timeAlive + ")",
             " " + this.totalScore,
 
         ].forEach(function(measure,i ) {
             var scoreObject = TextRenderer.render(self.font, measure);       
-            scoreObject.position.x = game.width/2 + 115;
-            scoreObject.position.y = (game.height/2 - 229) + i * 80;
-            if ( i==4 ) scoreObject.position.y = (game.height/2 - 229) + (i+1)*80;
+            scoreObject.position.x = game.width/2 + 90;
+            scoreObject.position.y = (game.height/2 - 225) + i * 82;
+            if ( i==4 ) scoreObject.position.y = (game.height/2 - 229) + (i+1)*82;
             scoreObject.position.z = 4;
             self.scene2d.add(scoreObject);
         });
