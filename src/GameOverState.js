@@ -42,7 +42,7 @@ var GameOverState = (function() {
 		this.scoreSprite    = new TQuad(game, {animations: [{frames: ['assets/textures/ui/scores.png']}]});
 			
  		this.bgSprite.mesh.position.z    = -1;
- 		this.scoreSprite.mesh.position.x = -130;
+ 		this.scoreSprite.mesh.position.x = -150;
 				
 		this.worldObject = new THREE.Object3D();
         this.worldObject.add(this.bgSprite.mesh);
@@ -59,7 +59,7 @@ var GameOverState = (function() {
 
         ].forEach(function(measure,i ) {
             var scoreObject = TextRenderer.render(self.font, measure);       
-            scoreObject.position.x = game.width/2 + 90;
+            scoreObject.position.x = game.width/2 + 70;
             scoreObject.position.y = (game.height/2 - 225) + i * 82;
             if ( i==4 ) scoreObject.position.y = (game.height/2 - 229) + (i+1)*82;
             scoreObject.position.z = 4;
