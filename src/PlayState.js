@@ -586,7 +586,7 @@ var PlayState = (function() {
                 var blackhole = this.player.fire(game, this.mars);
                 if( blackhole ) {
                     this.blackholes.push(blackhole);
-                    game.loader.get("audio/blackhole").play();
+                    game.loader.get("audio/blackhole").stop().play();
                 }
             }
 

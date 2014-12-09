@@ -104,6 +104,7 @@ var EscapePod = (function() {
         if(this.alive && this.life <= 0){
             this.alive = false;
             this.planet.remove(this.quad.mesh);
+            game.loader.get("audio/pod-launch").stop();
         }
 
     }
