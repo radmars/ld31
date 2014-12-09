@@ -142,6 +142,7 @@ var Player = (function() {
         });
 
         this.blackholeTimer = 0;
+        game.loader.get("audio/build").play();
 
     }
 
