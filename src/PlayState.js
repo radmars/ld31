@@ -310,7 +310,7 @@ var PlayState = (function() {
         this.shakeTime = 0;
         this.scoreCounter = 0;
 
-        this.hp = 1;
+        this.hp = 10;
         this.dieTimer = 5000;
         this.dieExplodeTimer = 0;
         this.dieing = false;
